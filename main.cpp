@@ -13,6 +13,7 @@
 #include "strategy.h"
 
 #include <iostream>
+//autor matheus
 
 using namespace std;
 
