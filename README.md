@@ -35,6 +35,12 @@ git checkout raphael
 
 ## Compartilhando código
 
+### Colaborar com o projeto
+
+Para colaborar com o projeto, você precisa estar cadastrado no repositório oficial como colaborador. Entre em contato comigo com seu usuário do GIT ou e-mail e enviarei um convite para colaboração.
+
+### Enviar atualizações
+
 Caso você esteja usando o GIT pela primeira vez, você precisará configurá-lo no seu computador com sua conta
 
 ```
