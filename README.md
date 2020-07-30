@@ -5,7 +5,7 @@ Estes códigos são modificações e adições ao simulador adaptado pelo grupo 
 # Pré-Requisitos
 
 * Computador com Linux
-* QTCreator
+* QT
 * [FIRASim](https://github.com/robocin/FIRASim) disponível no repositório do RobôCIN
 * [FIRA-Client](https://github.com/robocin/fira-client) disponível no repositório do RobôCIN
 
