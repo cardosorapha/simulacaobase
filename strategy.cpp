@@ -231,33 +231,3 @@ Strategy::~Strategy()
 {
 
 }
-
-/*
-vR0_b = (V0_b+W0_b*L)/R;
-vL0_b = (V0_b-W0_b*L)/R;
-
-//Limitando
-if (vR1_b>125)
-    vR1_b = 125;
-else if (vR1_b<-125)
-    vR1_b = -125;
-
-if (vL1_b>125)
-    vL1_b = 125;
-else if (vL1_b<-125)
-    vL1_b = -125;
-
-vR2_b = (V2_b+W2_b*L)/R;
-vL2_b = (V2_b-W2_b*L)/R;
-
-//Limitando
-if (vR2_b>125)
-    vR2_b = 125;
-else if (vR2_b<-125)
-    vR2_b = -125;
-
-if (vL2_b>125)
-    vL2_b = 125;
-else if (vL2_b<-125)
-    vL2_b = -125;
-*/
