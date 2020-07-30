@@ -19,6 +19,7 @@ Se não for esse comando, você usa outra distribuição Linux e sabe o que faze
 Após instalar corretamente os pré-requisitos, basta clonar este repositório na pasta em que está o arquivo main.cpp do FIRA-Client.
 
 ```
+cd diretorio/de/instalacao
 git init
 git remote add origin https://github.com/cardosorapha/simulacaobase
 git fetch
