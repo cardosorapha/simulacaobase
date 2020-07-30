@@ -72,6 +72,23 @@ git push
 
 Isso fará com que qualquer pessoa possa facilmente testar seu código no computador deles, além de que todo o progresso fica guardado. Note que apenas esses três arquivos serão modificados e atualizados, pois basta modificarmos eles para fazer qualquer programa funcional. Caso alguma modificação em outro arquivo seja necessária, entre em contato comigo e poderemos resolver isso.
 
+## Pegando apenas um arquivo do código oficial (ou outro branch)
+
+Caso por exemplo você queira recuperar o arquivo original **strategy.cpp**, faça
+
+```
+git checkout origin/master strategy.cpp
+```
+
+Isso irá sobrescrever o arquivo na sua pasta, mas ele ainda não estará no seu branch. Após fazer quaisquer modificações que desejar, pode realizar o mesmo processo para enviar atualizações 
+
+```
+cd diretorio/de/instalacao
+git add main.cpp strategy.cpp strategy.h
+git commit -m "Comentários"
+git push
+```
+
 ## Atualizando o código oficial
 
 A fazer!
