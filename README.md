@@ -5,8 +5,12 @@ Estes códigos são modificações e adições ao simulador adaptado pelo grupo 
 ## Pré-Requisitos
 
 * Computador com Linux
-* QT
+* [QT](https://www.qt.io/download)
 * GIT
+```
+sudo apt install git
+```
+Se não for esse comando, você usa outra distribuição Linux e sabe o que fazer
 * [FIRASim](https://github.com/robocin/FIRASim) disponível no repositório do RobôCIN
 * [FIRA-Client](https://github.com/robocin/fira-client) disponível no repositório do RobôCIN
 
