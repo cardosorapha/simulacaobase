@@ -2,7 +2,7 @@
 
 Estes códigos são modificações e adições ao simulador adaptado pelo grupo [RobôCIN](https://robocin.com.br/). Este programa é feito pensando em utilizar funções simples de movimentação do robô permitindo rápida criação de estratégias num ambiente separado ao resto do código que pode parecer complexo demais para quem não o entende por completo. 
 
-# Pré-Requisitos
+## Pré-Requisitos
 
 * Computador com Linux
 * QT
@@ -10,7 +10,7 @@ Estes códigos são modificações e adições ao simulador adaptado pelo grupo 
 * [FIRASim](https://github.com/robocin/FIRASim) disponível no repositório do RobôCIN
 * [FIRA-Client](https://github.com/robocin/fira-client) disponível no repositório do RobôCIN
 
-# Uso
+## Uso
 
 Após instalar corretamente os pré-requisitos, basta clonar este repositório na pasta em que está o arquivo main.cpp do FIRA-Client.
 
@@ -27,7 +27,7 @@ git branch raphael
 git checkout raphael
 ```
 
-# Compartilhando código
+## Compartilhando código
 
 Após sessões de programação, você pode atualizar os arquivos **no seu branch**, com o terminal na pasta onde está o main 
 
@@ -39,8 +39,14 @@ git push
 
 Isso fará com que qualquer pessoa possa facilmente testar seu código no computador deles, além de que todo o progresso fica guardado. Note que apenas esses três arquivos serão modificados e atualizados, pois basta modificarmos eles para fazer qualquer programa funcional. Caso alguma modificação em outro arquivo seja necessária, entre em contato comigo e poderemos resolver isso.
 
-# Atualizando o código oficial
+## Atualizando o código oficial
 
-##A fazer!
+A fazer!
+
+## Contato
+
+Raphael Cardoso - cardosodeoliveir@gmail.com
+
+Link do Projeto: [https://github.com/cardosorapha/simulacaobase](https://github.com/cardosorapha/simulacaobase)
 
 
