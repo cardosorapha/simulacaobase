@@ -17,7 +17,7 @@ Após instalar corretamente os pré-requisitos, basta clonar este repositório n
 git init
 git remote add origin https://github.com/cardosorapha/simulacaobase
 git fetch
-git reset origin/master  # Required when the versioned files existed in path before "git init" of this repo.
+git reset origin/master  
 git checkout -t origin/master
 ```
 Após clonar os arquivos corretamente, eles já serão adicionados à sua versão do simulador. Neste momento você deve criar um branch com seu nome
