@@ -11,6 +11,7 @@ Estes códigos são modificações e adições ao simulador adaptado pelo grupo 
 sudo apt install git
 ```
 Se não for esse comando, você usa outra distribuição Linux e sabe o que fazer
+* Conta criada no GIT
 * [FIRASim](https://github.com/robocin/FIRASim) disponível no repositório do RobôCIN
 * [FIRA-Client](https://github.com/robocin/fira-client) disponível no repositório do RobôCIN
 
@@ -34,11 +35,32 @@ git checkout raphael
 
 ## Compartilhando código
 
-Após sessões de programação, você pode atualizar os arquivos **no seu branch**, com o terminal na pasta onde está o main 
+Caso você esteja usando o GIT pela primeira vez, você precisará configurá-lo no seu computador com sua conta
 
 ```
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+```
+
+Após sessões de programação, você pode atualizar os arquivos no seu branch, com o terminal na pasta onde está o main 
+
+```
+cd diretorio/de/instalacao
 git add main.cpp strategy.cpp strategy.h
 git commit -m "Comentários"
+```
+
+Caso você não tenha feito nenhuma alteração, uma mensagem com vários arquivos não observados irá aparecer. Está tudo bem.
+
+O seu primeiro push deve ser feito configurando o upstream, trocando o nome **raphael** pelo nome do seu branch
+
+```
+git push --set-upstream origin raphael
+```
+
+Após isso, todos os seus pushes podem ser realizados simplesmente com
+
+```
 git push
 ```
 
