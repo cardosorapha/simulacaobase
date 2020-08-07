@@ -44,8 +44,12 @@ class Strategy {
     void andarFundo(double,int);
     void vaiPara(fira_message::Robot,double,double,int);
 
+;
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
+
+    bool robo_parede(fira_message::Robot b0);
+    void vaiPara2(fira_message::Robot,double,double,int);
 
   private:
     double L; //Distância entre roda e centro
