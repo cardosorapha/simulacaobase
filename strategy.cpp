@@ -18,7 +18,70 @@ Strategy::Strategy()
         vRL.push_back(aux);
         VW.push_back(aux);
     }
+
+    //Inicialização do vetor de preditor
+    int N = 10;
+    ballPredPos temp;
+    temp.x = 0;
+    temp.y = 0;
+
+    for(int i = 0; i < N; i++)
+    {
+        ballPredMemory.push_back(temp);
+    }
+
+    predictedBall = temp;
 }
+
+//Está fazendo muito pouca diferença, talvez deva diminuir o tempo
+//de amostragem.
+void Strategy::predict_ball(fira_message::Ball ball)
+{
+
+    // Depende de quantas foram inicializadas no construtor
+    // Retornarei um vetor de 3 pontos, tais que os primeiros elementos são futuros mais próximos
+    int N = 0;
+    float a = 0;     // Começo da pseudoinversão (A'A)^(-1)
+    float theta = 0; //Guarda o termo do preditor
+    float temp = 0;
+    N = this->ballPredMemory.size()-1; // indice do ultimo elemento
+
+    ballPredPos result; //Resultado será guardado aqui.
+
+    //Atualização do vetor de memória
+    ballPredPos ballUpdate;
+    ballUpdate.x = ball.x();
+    ballUpdate.y = ball.y();
+    ballPredMemory.push_back(ballUpdate);
+
+    //Primeiro para a posição x.
+    for (int m = 0; m < (N-1);m++)
+       a = a + pow(this->ballPredMemory[m].x,2);
+    a = 1/(a + 0.001);
+
+    for(int m = 0; m < (N-1);m++)
+       theta = theta + a * this->ballPredMemory[m].x * this->ballPredMemory[m+1].x;
+
+    temp = theta * ball.x();
+    result.x = pow(theta,50) * temp;
+
+    //Agora pra posicao y.
+    a = 0;
+    theta = 0;
+
+    for (int m = 0; m < (N-1);m++)
+       a = a + pow(this->ballPredMemory[m].y,2);
+    a = 1/(a + 0.001);
+
+    for(int m = 0; m < (N-1);m++)
+       theta = theta + a * this->ballPredMemory[m].y * this->ballPredMemory[m+1].y;
+    temp = theta * ball.y();
+    result.y = pow(theta,50) * temp;
+
+    //"Retorno" da função.
+    this->predictedBall = result;
+}
+
 
 double Strategy::irponto_linear(fira_message::Robot robot, double x, double y)
 {
@@ -62,15 +125,17 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
 
     //V0_b = irponto_linear(b0,ball.x(),ball.y());
 
-    ang_err angulo = olhar(b0, ball.x(), ball.y());
+    //ang_err angulo = olhar(b0, ball.x(), ball.y());
 
     //VW[0][1] = controleAngular(angulo.fi);
-    vaiPara(b0,ball.x(),ball.y(),0);
+    vaiPara(b0,predictedBall.x,predictedBall.y,0);
 
-    printf("Orientacao:%f\n",b0.orientation()*180/M_PI);
-    printf("Angulo:%f\n",angulo.fi);
-    printf("V:%f\n",VW[0][0]);
+    //printf("Orientacao:%f\n",b0.orientation()*180/M_PI);
+    //printf("Angulo:%f\n",angulo.fi);
+    //printf("V:%f\n",VW[0][0]);
     //printf("W:%f\n",VW[0][1]);
+    printf("Diff de pred x: %f\n", ball.x()-predictedBall.x);
+    printf("Diff de pred y: %f\n", ball.y()-predictedBall.y);
 
     andarFrente(100,1);
     girarHorario(50,2);
@@ -106,7 +171,6 @@ void Strategy::cinematica_amarelo()
 {
     //TODO
 }
-
 
 void Strategy::andarFrente(double vel, int id)
 {
@@ -156,7 +220,7 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
 
     Waux = limita_velocidade(Waux, Wmax); //satura em -1 a 1
 
-    return(Waux); //deve tetornar um valor entre -1 e 1
+    return(Waux); //deve retornar um valor entre -1 e 1
 }
 
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)

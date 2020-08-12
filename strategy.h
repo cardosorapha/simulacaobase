@@ -18,11 +18,24 @@ struct ang_err
 };
 
 
+//Estrutura para simplificar o uso do preditor
+//da bola.
+struct ballPredPos
+{
+    double x;
+    double y;
+};
+
+
 class Strategy {
   public:
 
     Strategy();
     ~Strategy();
+
+    vector<ballPredPos> ballPredMemory; //Vetor de memória com posições passadas
+    void predict_ball(fira_message::Ball ball);
+    ballPredPos predictedBall; //Inicializado no construtor
 
     vector<vector<double>> vRL, VW;
 
