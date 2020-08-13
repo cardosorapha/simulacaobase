@@ -48,14 +48,13 @@ class Strategy {
     void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                          fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
 
-    double irponto_linear(fira_message::Robot robot,double x, double y);
-    double irponto_angular(fira_message::Robot robot,double x, double y);
-
     void girarHorario(double,int);
     void girarAntihorario(double,int);
     void andarFrente(double,int);
     void andarFundo(double,int);
     void vaiPara(fira_message::Robot,double,double,int);
+
+    void vaiParaSiegwart(fira_message::Robot,double,double,int);
 
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
