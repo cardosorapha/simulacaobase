@@ -41,8 +41,8 @@ double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
 {
     //Precisa saber se olha de frente ou de costas
     //Ângulos são em radianos
-    double err_x = x-robot.x();
-    double err_y = y-robot.y();
+    double err_x = x - robot.x();
+    double err_y = y - robot.y();
     double theta = 0;
     double dtheta_frente = 0;
     double dtheta_costas = 0;
@@ -60,19 +60,34 @@ double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
 }
 
 //Estratégia azul
-void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
-                   fira_message::Robot b2, fira_message::Ball ball, const fira_message::Field & field)
+void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                             fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                             fira_message::Ball ball, const fira_message::Field & field)
 {
 
-    if(robo_parede(b0) == false){
-      vaiPara(b0,ball.x(),ball.y(),0);
-    }else{
-      vaiPara2(b0,ball.x(),ball.y(),0);
-    }
+double V[2] = {ball.x() - b0.x(),ball.y() - b0.y()};
 
-    //No final todas as velocidades devem estar definidas e apenas a última definição será considerada
-    //Convertendo as velocidades
-    cinematica_azul();
+double F[2] = {0,0};
+
+sai_robo(b0,y0,F);
+sai_robo(b0,y1,F);
+sai_robo(b0,y2,F);
+
+sai_robo(b0,b1,F);
+sai_robo(b0,b2,F);
+
+converte_vetor(V,0.1);
+converte_vetor(F,0.1);
+
+double ka = 1;
+double kr = 0.7;
+
+double new_pos[2] = {b0.x() + ka*V[0] + kr*F[0],b0.y() + ka*V[1] + kr*F[1]};
+
+vaiPara2(b0,new_pos[0],new_pos[1],0);
+
+cinematica_azul();
+
 }
 
 //Estrategia amarela
@@ -156,6 +171,7 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
     return(Waux); //deve tetornar um valor entre -1 e 1
 }
 
+
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 {
     double  Vaux = 0;
@@ -219,7 +235,7 @@ ang_err Strategy::olhar(fira_message::Robot rb, double px, double py)   // funç
 
 double Strategy::distancia(fira_message::Robot rb, double px, double py)
 {
-      double dist = sqrt( pow((rb.x()-px),2) + pow((rb.y()-py),2) );
+      double dist = sqrt( pow((rb.x() - px),2) + pow((rb.y()-py),2) );
       return(dist);
 }
 
@@ -229,13 +245,13 @@ Strategy::~Strategy()
 }
 
 //Verifica se o robô está perto da parede
-bool Strategy::robo_parede(fira_message::Robot b0){
+bool Strategy::robo_parede(fira_message::Robot rb){
     //limites de x e y
-    double lim_x = 0.69;
-    double lim_y = 0.59;
+    double lim_x = 0.68;
+    double lim_y = 0.58;
 
     //se o robo estiver longe das paredes retorna falso, caso contrario retorna verdadeiro
-    if ((b0.x() <= lim_x) && (b0.x() >= -lim_x)&&(b0.y() <= lim_y) && (b0.y() >= -lim_y)){
+    if ((rb.x() <= lim_x) && (rb.x() >= -lim_x)&&(rb.y() <= lim_y) && (rb.y() >= -lim_y)){
         return false;
     }else{
         return true;
@@ -247,8 +263,8 @@ bool Strategy::robo_parede(fira_message::Robot b0){
 void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
 {
     //limites de x e y
-    double lim_x = 0.69;
-    double lim_y = 0.59;
+    double lim_x = 0.68;
+    double lim_y = 0.58;
 
     //Satura as posições enviadas
     if (px > lim_x)
@@ -269,3 +285,27 @@ void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
     VW[id][1] = controleAngular(angulo.fi);
 }
 
+//Verifica se o robo precisa se afastar de outros robos para evitar travamentos
+void Strategy::sai_robo(fira_message::Robot rb,fira_message::Robot ry,double F[]){
+
+     double raio_adversario = 0.2;  //raio de detecção do adversario
+
+     double dist_adversario = sqrt(pow((rb.x() - ry.x()),2) + pow((rb.y() - ry.y()),2)); //calcula distancia ate o adversario
+
+     if (dist_adversario <= raio_adversario){//se a bola estiver longe e o adversario perto
+         F[0] += (rb.x() - ry.x())/pow(raio_adversario,2);
+         F[1] += (rb.y() - ry.y())/pow(raio_adversario,2);
+     }
+}
+
+//limita o valor de um vetor
+void Strategy::converte_vetor(double V[],double raio){
+
+    double dist = sqrt(pow(V[0],2) + pow(V[1],2));
+
+    if (dist > raio){
+        V[0] = raio*V[0]/dist;
+        V[1] = raio*V[1]/dist;
+    }
+
+}
