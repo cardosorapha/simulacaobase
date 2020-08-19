@@ -1,5 +1,6 @@
 #include "strategy.h"
 
+//Construtor da classe
 Strategy::Strategy()
 {
     L = 0.04; //Distância entre roda e centro
@@ -20,6 +21,7 @@ Strategy::Strategy()
     }
 }
 
+//Calcula o esforço necessário para um robô chegar em um ponto a partir da tangente hiperbolica da distância euclidiana
 double Strategy::irponto_linear(fira_message::Robot robot, double x, double y)
 {
     double err_x = x-robot.x();
@@ -34,6 +36,7 @@ double Strategy::irponto_linear(fira_message::Robot robot, double x, double y)
     return V;
 }
 
+//Calcula o esforço para girar o robô em direção a um determinado ponto
 double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
 {
     //Precisa saber se olha de frente ou de costas
@@ -56,30 +59,23 @@ double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
     return W;
 }
 
+//Estratégia azul
 void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
                    fira_message::Robot b2, fira_message::Ball ball, const fira_message::Field & field)
 {
 
-    //V0_b = irponto_linear(b0,ball.x(),ball.y());
-
-    ang_err angulo = olhar(b0, ball.x(), ball.y());
-
-    //VW[0][1] = controleAngular(angulo.fi);
-    vaiPara(b0,ball.x(),ball.y(),0);
-
-    printf("Orientacao:%f\n",b0.orientation()*180/M_PI);
-    printf("Angulo:%f\n",angulo.fi);
-    printf("V:%f\n",VW[0][0]);
-    //printf("W:%f\n",VW[0][1]);
-
-    andarFrente(100,1);
-    girarHorario(50,2);
+    if(robo_parede(b0) == false){
+      vaiPara(b0,ball.x(),ball.y(),0);
+    }else{
+      vaiPara2(b0,ball.x(),ball.y(),0);
+    }
 
     //No final todas as velocidades devem estar definidas e apenas a última definição será considerada
     //Convertendo as velocidades
     cinematica_azul();
 }
 
+//Estrategia amarela
 void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                      fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
 {
@@ -90,12 +86,14 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
 //Vr = (V + WL)/R
 //Limitando em +- 125
 //Resulta em Vmax = 2.5 e Wmax = 62.5
+
+//Calcula as velocidades a serem enviadas ao robô, utilizando cinematica inversa
 void Strategy::cinematica_azul()
 {
     for(int i = 0; i < qtdRobos; i++)
     {
-        vRL[i][0] = (VW[i][0]+VW[i][1]*L)/R;
-        vRL[i][1] = (VW[i][0]-VW[i][1]*L)/R;
+        vRL[i][0] = (VW[i][0] + VW[i][1]*L)/R;
+        vRL[i][1] = (VW[i][0] - VW[i][1]*L)/R;
 
         vRL[i][0] = limita_velocidade(vRL[i][0],vrMax);
         vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
@@ -106,7 +104,6 @@ void Strategy::cinematica_amarelo()
 {
     //TODO
 }
-
 
 void Strategy::andarFrente(double vel, int id)
 {
@@ -173,8 +170,7 @@ double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
     Vaux = V_max*tanh(k_lin*dist*angulo.flag);  //controle não linear de V
 
     if (Vaux*angulo.flag < v_min) Vaux = v_min*angulo.flag;  //aplica o valor definido em v_min
-
-                                                       //if (angulo.fi*angulo.flag > ang_grande) V = v_min*angulo.flag;  // controle de prioridade reduzindo V quando "ang_err" for grande
+    //if (angulo.fi*angulo.flag > ang_grande) V = v_min*angulo.flag;  // controle de prioridade reduzindo V quando "ang_err" for grande
     Vaux = Vaux*cos(angulo.fi*M_PI / 180);// controle de prioridade reduzindo V quando "ang_err" for grande
 
     Vaux = limita_velocidade(Vaux, Vmax); //satura em -1 a 1
@@ -231,3 +227,45 @@ Strategy::~Strategy()
 {
 
 }
+
+//Verifica se o robô está perto da parede
+bool Strategy::robo_parede(fira_message::Robot b0){
+    //limites de x e y
+    double lim_x = 0.69;
+    double lim_y = 0.59;
+
+    //se o robo estiver longe das paredes retorna falso, caso contrario retorna verdadeiro
+    if ((b0.x() <= lim_x) && (b0.x() >= -lim_x)&&(b0.y() <= lim_y) && (b0.y() >= -lim_y)){
+        return false;
+    }else{
+        return true;
+    }
+}
+
+
+//Vaipara com saturação nas posições enviadas
+void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
+{
+    //limites de x e y
+    double lim_x = 0.69;
+    double lim_y = 0.59;
+
+    //Satura as posições enviadas
+    if (px > lim_x)
+        px = lim_x;
+
+    if (px < -lim_x)
+        px = -lim_x;
+
+    if (py > lim_y)
+        py = lim_y;
+
+    if (py < -lim_y)
+        py = -lim_y;
+
+    //Calcula a velocidade nas rodas
+    VW[id][0] = controleLinear(rb,px,py);
+    ang_err angulo = olhar(rb, px, py);
+    VW[id][1] = controleAngular(angulo.fi);
+}
+
