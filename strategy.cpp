@@ -32,7 +32,7 @@ Strategy::Strategy()
 
     predictedBall = temp;
 
-    //Inicialização dos vetores de memória
+    //Inicialização dos vetores de memória PID
     int N_mem = 5;
 
     for(int i=0; i < N_mem; i++)
@@ -165,7 +165,7 @@ void Strategy::vaiParaDinamico(fira_message::Robot rb, double px, double py, int
     double W = 0;
 
     double Kp_l = 0.6;
-    double Ki_l = 0.06;
+    double Ki_l = 0.1;
     double Kd_l = 0.01;
 
     double Kp_a = 0.15;
