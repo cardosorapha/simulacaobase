@@ -31,6 +31,15 @@ Strategy::Strategy()
     }
 
     predictedBall = temp;
+
+    //Inicialização dos vetores de memória
+    int N_mem = 5;
+
+    for(int i=0; i < N_mem; i++)
+    {
+        memoria_azul_linear.push_back(0);
+        memoria_azul_angular.push_back(0);
+    }
 }
 
 //Está fazendo muito pouca diferença, talvez deva diminuir o tempo
@@ -44,6 +53,11 @@ void Strategy::predict_ball(fira_message::Ball ball)
     float a = 0;     // Começo da pseudoinversão (A'A)^(-1)
     float theta = 0; //Guarda o termo do preditor
     float temp = 0;
+
+    int futureTime = 50; //Representa quantas iterações no futuro o robô vai predizer a bola
+    //Atenção: quanto mais no futuro, mais errado, então imagine esse valor como um ganho de preditor
+    //tal que MAIOR = mais pra frente, MENOR = menos pra frente no tempo.
+
     N = this->ballPredMemory.size()-1; // indice do ultimo elemento
 
     ballPredPos result; //Resultado será guardado aqui.
@@ -62,7 +76,7 @@ void Strategy::predict_ball(fira_message::Ball ball)
 
     for(int m = 0; m < (N-1);m++)
        theta = theta + a * this->ballPredMemory[m].x * this->ballPredMemory[m+1].x;
-    theta = pow(theta,50);
+    theta = pow(theta,futureTime);
     result.x = theta * ball.x();
 
     //Agora pra posicao y.
@@ -75,7 +89,7 @@ void Strategy::predict_ball(fira_message::Ball ball)
 
     for(int m = 0; m < (N-1);m++)
        theta = theta + a * this->ballPredMemory[m].y * this->ballPredMemory[m+1].y;
-    theta = pow(theta,50);
+    theta = pow(theta,futureTime);
     result.y = theta * ball.y();
 
     //"Retorno" da função.
@@ -89,16 +103,16 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
     ang_err angulo = olhar(b0, predictedBall.x, predictedBall.y);
 
     //VW[0][1] = controleAngular(angulo.fi);
-    vaiPara(b0,predictedBall.x,predictedBall.y,0);
+    vaiParaDinamico(b0,ball.x(),ball.y(),0);
 
     //printf("Orientacao:%f\n",b0.orientation()*180/M_PI);
     //printf("Angulo:%f\n",angulo.fi);
     //printf("V:%f\n",VW[0][0]);
     //printf("W:%f\n",VW[0][1]);
-    printf("Diff de pred x: %f\n", ball.x()-predictedBall.x);
-    printf("Diff de pred y: %f\n", ball.y()-predictedBall.y);
+    //printf("Diff de pred x: %f\n", ball.x()-predictedBall.x);
+    //printf("Diff de pred y: %f\n", ball.y()-predictedBall.y);
 
-    andarFrente(100,1);
+    girarHorario(50,1);
     girarHorario(50,2);
 
     //No final todas as velocidades devem estar definidas e apenas a última definição será considerada
@@ -120,31 +134,6 @@ void Strategy::andarFundo(double vel, int id)
     VW[id][1] = 0;
 }
 
-void Strategy::vaiPara(fira_message::Robot rb, double px, double py, int id)
-{
-    VW[id][0] = controleLinear(rb,px,py);
-    ang_err angulo = olhar(rb, px, py);
-    VW[id][1] = controleAngular(angulo.fi);
-}
-
-void Strategy::vaiParaSiegwart(fira_message::Robot rb,double px, double py, int id)
-{
-    //Em coordenadas polares
-    double  dist = distancia(rb, px, py);
-    ang_err angulo = olhar(rb, px, py);
-    double B = 0; //Orientação de destino
-
-    //Parâmetros do controlador
-    double ka = 0.2;
-    double kb = -2;
-    double kp = ka/2;
-
-    //Linear
-    VW[id][0] = kp*dist*angulo.flag;
-    //Angular
-    VW[id][1] = ka*angulo.fi + kb*B;
-}
-
 void Strategy::girarHorario(double vel,int id)
 {
     double Waux = vel/vrMax;
@@ -158,6 +147,64 @@ void Strategy::girarAntihorario(double vel,int id)
     VW[id][0] = 0;
     VW[id][1] = -Waux*Wmax;
 }
+
+void Strategy::vaiPara(fira_message::Robot rb, double px, double py, int id)
+{
+    VW[id][0] = controleLinear(rb,px,py);
+    ang_err angulo = olhar(rb, px, py);
+    VW[id][1] = controleAngular(angulo.fi);
+}
+
+void Strategy::vaiParaDinamico(fira_message::Robot rb, double px, double py, int id)
+{
+    ang_err angulo = olhar(rb, px, py);
+    double erro_angular = angulo.fi; //de -180 a 180
+    double erro_linear = angulo.flag*distancia(rb,px,py);
+
+    double V = 0;
+    double W = 0;
+
+    double Kp_l = 0.6;
+    double Ki_l = 0.06;
+    double Kd_l = 0.01;
+
+    double Kp_a = 0.15;
+    double Ki_a = 0.02;
+    double Kd_a = 0.01;
+
+    double temp_integral_l = 0;
+    double temp_integral_a = 0;
+
+    for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
+    {
+        temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
+    }
+
+    for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
+    {
+        temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
+    }
+
+    V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
+
+    W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
+
+    VW[id][0] = V;
+    VW[id][1] = W;
+    atualiza_memoria_azul(erro_linear,erro_angular);
+}
+
+void Strategy::atualiza_memoria_azul(double linear, double angular)
+{
+    //Removendo últimos elementos
+    memoria_azul_linear.pop_back();
+    memoria_azul_angular.pop_back();
+
+    //Inserindo novos elementos no começo
+    memoria_azul_linear.insert(memoria_azul_linear.begin(),linear);
+    memoria_azul_angular.insert(memoria_azul_angular.begin(),angular);
+}
+
 
 double Strategy::controleAngular(double fi2) // função testada. lembrete : (sinal de w) = -(sinal de fi)
 {

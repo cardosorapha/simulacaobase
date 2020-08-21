@@ -54,7 +54,7 @@ class Strategy {
     void andarFundo(double,int);
     void vaiPara(fira_message::Robot,double,double,int);
 
-    void vaiParaSiegwart(fira_message::Robot,double,double,int);
+    void vaiParaDinamico(fira_message::Robot,double,double,int);
 
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
@@ -64,6 +64,11 @@ class Strategy {
     double R; //Raio da roda
     void cinematica_azul(); //transforma V e W em Vr e Vl do time azul
     void cinematica_amarelo(); //transforma V e W em Vr e Vl do time amarelo
+
+    void atualiza_memoria_azul(double, double);
+    vector<double> memoria_azul_linear;
+    vector<double> memoria_azul_angular;
+
 
     ang_err olhar(fira_message::Robot, double, double);
     double distancia(fira_message::Robot,double,double);
