@@ -19,7 +19,192 @@ Strategy::Strategy()
         vRL.push_back(aux);
         VW.push_back(aux);
     }
+
+    //Inicialização do vetor de preditor
+        int N = 10;
+        ballPredPos temp;
+        temp.x = 0;
+        temp.y = 0;
+
+        for(int i = 0; i < N; i++)
+        {
+            ballPredMemory.push_back(temp);
+        }
+
+        predictedBall = temp;
+
+        //Inicialização dos vetores de memória PID
+        int N_mem = 5;
+
+        for(int i=0; i < N_mem; i++)
+        {
+            memoria_azul_linear.push_back(0);
+            memoria_azul_angular.push_back(0);
+        }
 }
+
+
+//Está fazendo muito pouca diferença, talvez deva diminuir o tempo
+//de amostragem.
+void Strategy::predict_ball(fira_message::Ball ball)
+{
+
+    // Depende de quantas foram inicializadas no construtor
+    // Retornarei um vetor de 3 pontos, tais que os primeiros elementos são futuros mais próximos
+    int N = 0;
+    float a = 0;     // Começo da pseudoinversão (A'A)^(-1)
+    float theta = 0; //Guarda o termo do preditor
+    float temp = 0;
+
+    int futureTime = 50; //Representa quantas iterações no futuro o robô vai predizer a bola
+    //Atenção: quanto mais no futuro, mais errado, então imagine esse valor como um ganho de preditor
+    //tal que MAIOR = mais pra frente, MENOR = menos pra frente no tempo.
+
+    N = this->ballPredMemory.size()-1; // indice do ultimo elemento
+
+    ballPredPos result; //Resultado será guardado aqui.
+
+    //Atualização do vetor de memória
+    ballPredPos ballUpdate;
+    ballUpdate.x = ball.x();
+    ballUpdate.y = ball.y();
+    ballPredMemory.push_back(ballUpdate); //Adicionando novo elemento à memória
+    ballPredMemory.erase(ballPredMemory.begin()+0); //Removendo último valor da memória
+
+    //Primeiro para a posição x.
+    for (int m = 0; m < (N-1);m++)
+       a = a + pow(this->ballPredMemory[m].x,2);
+    a = 1/(a + 0.001);
+
+    for(int m = 0; m < (N-1);m++)
+       theta = theta + a * this->ballPredMemory[m].x * this->ballPredMemory[m+1].x;
+    theta = pow(theta,futureTime);
+    result.x = theta * ball.x();
+
+    //Agora pra posicao y.
+    a = 0;
+    theta = 0;
+
+    for (int m = 0; m < (N-1);m++)
+       a = a + pow(this->ballPredMemory[m].y,2);
+    a = 1/(a + 0.001);
+
+    for(int m = 0; m < (N-1);m++)
+       theta = theta + a * this->ballPredMemory[m].y * this->ballPredMemory[m+1].y;
+    theta = pow(theta,futureTime);
+    result.y = theta * ball.y();
+
+    //"Retorno" da função.
+    this->predictedBall = result;
+}
+
+void Strategy::vaiParaDinamico(fira_message::Robot rb, double px, double py, int id)
+{
+    ang_err angulo = olhar(rb, px, py);
+    double erro_angular = angulo.fi; //de -180 a 180
+    double erro_linear = angulo.flag*distancia(rb,px,py);
+
+    double V = 0;
+    double W = 0;
+
+    double Kp_l = 5;
+    double Ki_l = 1;
+    double Kd_l = 0.01;
+
+    double Kp_a = 0.15;
+    double Ki_a = 0.02;
+    double Kd_a = 0.01;
+
+    double temp_integral_l = 0;
+    double temp_integral_a = 0;
+
+    for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
+    {
+        temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
+    }
+
+    for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
+    {
+        temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
+    }
+
+    V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
+
+    W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
+
+    VW[id][0] = V;
+    VW[id][1] = W;
+    atualiza_memoria_azul(erro_linear,erro_angular);
+}
+
+void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, int id)
+{
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (px > lim_x)
+        px = lim_x;
+
+    if (px < -lim_x)
+        px = -lim_x;
+
+    if (py > lim_y)
+        py = lim_y;
+
+    if (py < -lim_y)
+        py = -lim_y;
+
+    ang_err angulo = olhar(rb, px, py);
+    double erro_angular = angulo.fi; //de -180 a 180
+    double erro_linear = angulo.flag*distancia(rb,px,py);
+
+    double V = 0;
+    double W = 0;
+
+    double Kp_l = 5;
+    double Ki_l = 10;
+    double Kd_l = 1;
+
+    double Kp_a = 0.15;
+    double Ki_a = 0.02;
+    double Kd_a = 0.01;
+
+    double temp_integral_l = 0;
+    double temp_integral_a = 0;
+
+    for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
+    {
+        temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
+    }
+
+    for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
+    {
+        temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
+    }
+
+    V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
+
+    W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
+
+    VW[id][0] = V;
+    VW[id][1] = W;
+    atualiza_memoria_azul(erro_linear,erro_angular);
+}
+
+
+void Strategy::atualiza_memoria_azul(double linear, double angular)
+{
+    //Removendo últimos elementos
+    memoria_azul_linear.pop_back();
+    memoria_azul_angular.pop_back();
+
+    //Inserindo novos elementos no começo
+    memoria_azul_linear.insert(memoria_azul_linear.begin(),linear);
+    memoria_azul_angular.insert(memoria_azul_angular.begin(),angular);
+}
+
 
 //Calcula o esforço necessário para um robô chegar em um ponto a partir da tangente hiperbolica da distância euclidiana
 double Strategy::irponto_linear(fira_message::Robot robot, double x, double y)
@@ -82,9 +267,15 @@ converte_vetor(F,0.1);
 double ka = 1;
 double kr = 0.7;
 
+//aplicação do campo potencial para redefinir a nova posição que o robo deve ir desviando dos obstáculos
+//posição do robo + constante de atração ka * atração do destino V + constante de repulsao kr * repulsao dos outros robos F
 double new_pos[2] = {b0.x() + ka*V[0] + kr*F[0],b0.y() + ka*V[1] + kr*F[1]};
 
-vaiPara2(b0,new_pos[0],new_pos[1],0);
+vaiParaDinamico2(b0,new_pos[0],new_pos[1],0);
+
+//vaiPara2(b0,new_pos[0],new_pos[1],0);
+
+//vaiPara(b1,ball.x(),ball.y(),1);
 
 cinematica_azul();
 
