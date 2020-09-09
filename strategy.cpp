@@ -250,7 +250,24 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
-double V[2] = {ball.x() - b0.x(),ball.y() - b0.y()};
+//double V[2] = {ball.x() - b0.x(),ball.y() - b0.y()};
+
+
+static vector<double> pontosX = {0.55,-0.55,0.55,-0.55};
+static vector<double> pontosY = {0.55,-0.55,-0.55,0.55};
+
+double V[2] = {pontosX[0] - b0.x(),pontosY[0] - b0.y()};
+
+double dist = sqrt(pow(pontosX[0] - b0.x(),2)+pow(pontosY[0] - b0.y(),2));
+
+if (dist < 0.05){
+    //atualiza vetor de x
+    pontosX.push_back(pontosX[0]);
+    pontosX.erase(pontosX.begin());
+    //atualiza vetor de y
+    pontosY.push_back(pontosY[0]);
+    pontosY.erase(pontosY.begin());
+}
 
 double F[2] = {0,0};
 
