@@ -59,11 +59,13 @@ class Strategy {
     void vaiParaDinamico2(fira_message::Robot,double,double,int);
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
-
     bool robo_parede(fira_message::Robot);
     void vaiPara2(fira_message::Robot,double,double,int);
     void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
     void converte_vetor(double V[],double);
+    double filtro(double V);
+
+    vector<double> inserirRRT(vector<double>,vector<double>,int);
 
   private:
 
@@ -83,5 +85,4 @@ class Strategy {
 };
 
 #endif // STRATEGY_H
-
 
