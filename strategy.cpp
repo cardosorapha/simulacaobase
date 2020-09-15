@@ -252,9 +252,13 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
 
 //double V[2] = {ball.x() - b0.x(),ball.y() - b0.y()};
 
-
 static vector<double> pontosX = {0.55,-0.55,0.55,-0.55};
 static vector<double> pontosY = {0.55,-0.55,-0.55,0.55};
+
+vector<double> teste ={0};
+
+pontosX = inserirRRT(teste,pontosX,0);
+pontosY = inserirRRT(teste,pontosY,0);
 
 double V[2] = {pontosX[0] - b0.x(),pontosY[0] - b0.y()};
 
@@ -262,10 +266,10 @@ double dist = sqrt(pow(pontosX[0] - b0.x(),2)+pow(pontosY[0] - b0.y(),2));
 
 if (dist < 0.05){
     //atualiza vetor de x
-    pontosX.push_back(pontosX[0]);
+ //   pontosX.push_back(pontosX[0]);
     pontosX.erase(pontosX.begin());
     //atualiza vetor de y
-    pontosY.push_back(pontosY[0]);
+ //   pontosY.push_back(pontosY[0]);
     pontosY.erase(pontosY.begin());
 }
 
@@ -293,6 +297,10 @@ vaiParaDinamico2(b0,new_pos[0],new_pos[1],0);
 //vaiPara2(b0,new_pos[0],new_pos[1],0);
 
 //vaiPara(b1,ball.x(),ball.y(),1);
+
+VW[0][0] = filtro(VW[0][0]);
+
+printf("%f\n",VW[0][0]);
 
 cinematica_azul();
 
@@ -516,4 +524,43 @@ void Strategy::converte_vetor(double V[],double raio){
         V[1] = raio*V[1]/dist;
     }
 
+}
+
+double Strategy::filtro(double V){
+/*
+    //Media móvel
+    static vector<double> V_vector = {0,0,0,0,0};
+    double sum = 0;
+
+    V_vector.erase(V_vector.begin());
+    V_vector.push_back(V);
+
+    for (int i = 0;i < (int)V_vector.size() ; i++){
+        sum = sum + V_vector[i];
+    }
+
+    V = sum/V_vector.size();
+
+*/
+
+    //filtro IIR
+    static double V_antigo = 0;
+    double k = 0.9;
+
+    V = V_antigo*(1-k) + V*k;
+    V_antigo = V;
+
+
+    return V;
+}
+
+vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int opcao){
+    //Se a opção for zero concatena os vetores, senao apaga tudo e insere o novo vetor no lugar
+    if (opcao == 0){
+        V_out.insert(V_out.end(),V_in.begin(),V_in.end());
+    }else{
+        V_out.clear();
+        V_out.insert(V_out.end(),V_in.begin(),V_in.end());
+    }
+    return V_out;
 }
