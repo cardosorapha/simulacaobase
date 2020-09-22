@@ -367,19 +367,12 @@ public:
 
     //Método 'Extend' - Testa a expansão da RRT for RRT-CONNECT
     State x_new;
-    int Extend(State x_rand, vector<State> center_obs, int raio, double* tempos)
+    int Extend(State x_rand, vector<State> center_obs, int raio)
     {
-        tempos[2] = tempos[2] + 1;
-        start = clock();
         int nearest_node = nearest_neighbor(x_rand);
         State x_near = GetNodeState(nearest_node);
-        end = clock();
-        tempos[0] += (pow(10,6)*(end-start))/CLOCKS_PER_SEC;
 
-        start = clock();
         x_new = new_state(x_near,x_rand);
-        end = clock();
-        tempos[1] += (pow(10,6)*(end-start))/CLOCKS_PER_SEC;
 
         if(obs_detect(x_new,center_obs,raio))
          {
@@ -410,12 +403,12 @@ public:
         return Trapped;
     }
     //Método 'Connect' - Testa a expansão da RRT for RRT-CONNECT
-    int Connect(State x_rand, vector<State> center_obs, int raio,double* tempos)
+    int Connect(State x_rand, vector<State> center_obs, int raio)
     {
         int S;
         do
         {
-            S = Extend(x_rand,center_obs,raio,tempos);
+            S = Extend(x_rand,center_obs,raio);
 
         }while (S==Advanced);
 
@@ -472,7 +465,7 @@ public:
     }
 
     //Método 'smooth_path' retorna um vetor de pontos para tragetória otimizda - Mapa "aberto"
-    void smooth_path( vector<State> center_obs, double raio)
+    vector<State> smooth_path( vector<State> center_obs, double raio)
     {
 
         State _init = GetNodeState(0);
@@ -504,6 +497,8 @@ public:
             }
 
         }
+
+        return optimal_nodes;
 
     }
 
