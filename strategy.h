@@ -54,19 +54,28 @@ class Strategy {
     void girarAntihorario(double,int);
     void andarFrente(double,int);
     void andarFundo(double,int);
+
     void vaiPara(fira_message::Robot,double,double,int);
     void vaiParaDinamico(fira_message::Robot,double,double,int);
     void vaiParaDinamico2(fira_message::Robot,double,double,int);
+
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
+
     bool robo_parede(fira_message::Robot);
+
     void vaiPara2(fira_message::Robot,double,double,int);
     void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
+    void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
     void converte_vetor(double V[],double);
     double filtro(double V);
 
     vector<double> inserirRRT(vector<double>,vector<double>,int);
+    void goleiro(fira_message::Robot,fira_message::Ball,int);
 
+    void vaiPara_desviando(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                           fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                           vector <double> destino,int id);
   private:
 
     double L; //Distância entre roda e centro
@@ -85,4 +94,5 @@ class Strategy {
 };
 
 #endif // STRATEGY_H
+
 
