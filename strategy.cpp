@@ -1,5 +1,6 @@
 #include "strategy.h"
 
+//Construtor da classe
 Strategy::Strategy()
 {
     L = 0.04; //Distância entre roda e centro
@@ -18,106 +19,160 @@ Strategy::Strategy()
         vRL.push_back(aux);
         VW.push_back(aux);
     }
+}
 
-    //Inicialização do vetor de preditor
-    int N = 10;
-    ballPredPos temp;
-    temp.x = 0;
-    temp.y = 0;
+//Calcula o esforço necessário para um robô chegar em um ponto a partir da tangente hiperbolica da distância euclidiana
+double Strategy::irponto_linear(fira_message::Robot robot, double x, double y)
+{
+    double err_x = x-robot.x();
+    double err_y = y-robot.y();
+    double dtheta = 0;
+    double dp = 0;
+    double V = 0;
 
-    for(int i = 0; i < N; i++)
+    dp = sqrt(pow(err_x,2)+pow(err_y,2));
+
+    V = Vmax*tanh(0.3*dp);
+    return V;
+}
+
+//Calcula o esforço para girar o robô em direção a um determinado ponto
+double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
+{
+    //Precisa saber se olha de frente ou de costas
+    //Ângulos são em radianos
+    double err_x = x - robot.x();
+    double err_y = y - robot.y();
+    double theta = 0;
+    double dtheta_frente = 0;
+    double dtheta_costas = 0;
+    double dtheta = 0;
+    double W = 0;
+
+    theta = atan2(err_y,err_x); //Ângulo desejado
+
+    dtheta_frente = theta-robot.orientation();
+    dtheta_costas = theta-(robot.orientation()+M_PI);
+    dtheta = (dtheta_frente<dtheta_costas)?(dtheta_frente):(dtheta_costas); //O menor é o executado, não tá muito certo
+
+    W = Wmax*tanh(0.03*dtheta);
+    return W;
+}
+
+//Estratégia azul
+void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                             fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                             fira_message::Ball ball, const fira_message::Field & field)
+{
+/*
+double V[2] = {ball.x() - b0.x(),ball.y() - b0.y()};
+
+double F[2] = {0,0};
+
+sai_robo(b0,y0,F);
+sai_robo(b0,y1,F);
+sai_robo(b0,y2,F);
+
+sai_robo(b0,b1,F);
+sai_robo(b0,b2,F);
+
+converte_vetor(V,0.1);
+converte_vetor(F,0.1);
+
+double ka = 1;
+double kr = 0.7;
+
+double new_pos[2] = {b0.x() + ka*V[0] + kr*F[0],b0.y() + ka*V[1] + kr*F[1]};
+
+vaiPara2(b0,new_pos[0],new_pos[1],0);
+*/
+//Raio da RRT-Cone
+double raio = 0.1;
+double obs_raio = 0.06;
+
+
+//Ponto inicial e final
+State init = State(b0.x(),b0.y());
+State Goal = State(ball.x(),ball.y());
+
+//Vetor de centros
+vector<State> obs;
+obs.push_back(State(b1.x(),b1.y()));
+obs.push_back(State(b2.x(),b2.y()));
+obs.push_back(State(y0.x(),y0.y()));
+obs.push_back(State(y1.x(),y1.y()));
+obs.push_back(State(y2.x(),y2.y()));
+
+double angle = atan2(init.x - Goal.x,init.y - Goal.y);
+double dist = sqrt(pow(Goal.x-init.x,2.0)+pow(Goal.y-init.y,2.0));
+State GoalFrontier;
+if(dist < raio)
+     GoalFrontier = Goal;
+else
+    GoalFrontier = State(init.x -  raio*sin(angle),init.y -  raio*cos(angle));
+
+
+delete rrt;
+rrt = new rrt_graph(init, GoalFrontier);
+
+
+if(rrt->test_connect(init,Goal,obs,obs_raio))
+{
+    rrt->x_new = GoalFrontier;
+}else
+{
+    for(int i = 0; i < 1000; i++)
     {
-        ballPredMemory.push_back(temp);
+
+        State x_rand;
+        x_rand = rrt->random_state(field.width(),field.length(),GoalFrontier,0.7);
+        rrt->Extend(x_rand,obs,obs_raio);
+
+        if(rrt->test_connect(rrt->x_new,GoalFrontier,obs,obs_raio))
+            break;
+
+        cout << i << endl;
+
     }
+    //vector<State> aux = rrt->smooth_path(obs,0.04);
+    //rrt->x_new = *(aux.begin()+1);
+    rrt->generate_state();
+}
 
-    predictedBall = temp;
+vaiPara2(b0,Goal.x,Goal.y,0);
 
-    //Inicialização dos vetores de memória PID
-    int N_mem = 5;
+cinematica_azul();
 
-    for(int i=0; i < N_mem; i++)
+}
+
+//Estrategia amarela
+void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
+                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
+{
+    //TODO
+}
+
+//Vl = (V - WL)/R
+//Vr = (V + WL)/R
+//Limitando em +- 125
+//Resulta em Vmax = 2.5 e Wmax = 62.5
+
+//Calcula as velocidades a serem enviadas ao robô, utilizando cinematica inversa
+void Strategy::cinematica_azul()
+{
+    for(int i = 0; i < qtdRobos; i++)
     {
-        memoria_azul_linear.push_back(0);
-        memoria_azul_angular.push_back(0);
+        vRL[i][0] = (VW[i][0] + VW[i][1]*L)/R;
+        vRL[i][1] = (VW[i][0] - VW[i][1]*L)/R;
+
+        vRL[i][0] = limita_velocidade(vRL[i][0],vrMax);
+        vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
     }
 }
 
-//Está fazendo muito pouca diferença, talvez deva diminuir o tempo
-//de amostragem.
-void Strategy::predict_ball(fira_message::Ball ball)
+void Strategy::cinematica_amarelo()
 {
-
-    // Depende de quantas foram inicializadas no construtor
-    // Retornarei um vetor de 3 pontos, tais que os primeiros elementos são futuros mais próximos
-    int N = 0;
-    float a = 0;     // Começo da pseudoinversão (A'A)^(-1)
-    float theta = 0; //Guarda o termo do preditor
-    float temp = 0;
-
-    int futureTime = 50; //Representa quantas iterações no futuro o robô vai predizer a bola
-    //Atenção: quanto mais no futuro, mais errado, então imagine esse valor como um ganho de preditor
-    //tal que MAIOR = mais pra frente, MENOR = menos pra frente no tempo.
-
-    N = this->ballPredMemory.size()-1; // indice do ultimo elemento
-
-    ballPredPos result; //Resultado será guardado aqui.
-
-    //Atualização do vetor de memória
-    ballPredPos ballUpdate;
-    ballUpdate.x = ball.x();
-    ballUpdate.y = ball.y();
-    ballPredMemory.push_back(ballUpdate); //Adicionando novo elemento à memória
-    ballPredMemory.erase(ballPredMemory.begin()+0); //Removendo último valor da memória
-
-    //Primeiro para a posição x.
-    for (int m = 0; m < (N-1);m++)
-       a = a + pow(this->ballPredMemory[m].x,2);
-    a = 1/(a + 0.001);
-
-    for(int m = 0; m < (N-1);m++)
-       theta = theta + a * this->ballPredMemory[m].x * this->ballPredMemory[m+1].x;
-    theta = pow(theta,futureTime);
-    result.x = theta * ball.x();
-
-    //Agora pra posicao y.
-    a = 0;
-    theta = 0;
-
-    for (int m = 0; m < (N-1);m++)
-       a = a + pow(this->ballPredMemory[m].y,2);
-    a = 1/(a + 0.001);
-
-    for(int m = 0; m < (N-1);m++)
-       theta = theta + a * this->ballPredMemory[m].y * this->ballPredMemory[m+1].y;
-    theta = pow(theta,futureTime);
-    result.y = theta * ball.y();
-
-    //"Retorno" da função.
-    this->predictedBall = result;
-}
-
-void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
-                   fira_message::Robot b2, fira_message::Ball ball, const fira_message::Field & field)
-{
-
-    ang_err angulo = olhar(b0, predictedBall.x, predictedBall.y);
-
-    //VW[0][1] = controleAngular(angulo.fi);
-    vaiParaDinamico(b0,ball.x(),ball.y(),0);
-
-    //printf("Orientacao:%f\n",b0.orientation()*180/M_PI);
-    //printf("Angulo:%f\n",angulo.fi);
-    //printf("V:%f\n",VW[0][0]);
-    //printf("W:%f\n",VW[0][1]);
-    //printf("Diff de pred x: %f\n", ball.x()-predictedBall.x);
-    //printf("Diff de pred y: %f\n", ball.y()-predictedBall.y);
-
-    girarHorario(50,1);
-    girarHorario(50,2);
-
-    //No final todas as velocidades devem estar definidas e apenas a última definição será considerada
-    //Convertendo as velocidades
-    cinematica_azul();
+    //TODO
 }
 
 void Strategy::andarFrente(double vel, int id)
@@ -134,6 +189,13 @@ void Strategy::andarFundo(double vel, int id)
     VW[id][1] = 0;
 }
 
+void Strategy::vaiPara(fira_message::Robot rb, double px, double py, int id)
+{
+    VW[id][0] = controleLinear(rb,px,py);
+    ang_err angulo = olhar(rb, px, py);
+    VW[id][1] = controleAngular(angulo.fi);
+}
+
 void Strategy::girarHorario(double vel,int id)
 {
     double Waux = vel/vrMax;
@@ -148,64 +210,6 @@ void Strategy::girarAntihorario(double vel,int id)
     VW[id][1] = -Waux*Wmax;
 }
 
-void Strategy::vaiPara(fira_message::Robot rb, double px, double py, int id)
-{
-    VW[id][0] = controleLinear(rb,px,py);
-    ang_err angulo = olhar(rb, px, py);
-    VW[id][1] = controleAngular(angulo.fi);
-}
-
-void Strategy::vaiParaDinamico(fira_message::Robot rb, double px, double py, int id)
-{
-    ang_err angulo = olhar(rb, px, py);
-    double erro_angular = angulo.fi; //de -180 a 180
-    double erro_linear = angulo.flag*distancia(rb,px,py);
-
-    double V = 0;
-    double W = 0;
-
-    double Kp_l = 0.6;
-    double Ki_l = 0.1;
-    double Kd_l = 0.01;
-
-    double Kp_a = 0.15;
-    double Ki_a = 0.02;
-    double Kd_a = 0.01;
-
-    double temp_integral_l = 0;
-    double temp_integral_a = 0;
-
-    for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
-    {
-        temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
-    }
-
-    for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
-    {
-        temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
-    }
-
-    V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
-
-    W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
-
-    VW[id][0] = V;
-    VW[id][1] = W;
-    atualiza_memoria_azul(erro_linear,erro_angular);
-}
-
-void Strategy::atualiza_memoria_azul(double linear, double angular)
-{
-    //Removendo últimos elementos
-    memoria_azul_linear.pop_back();
-    memoria_azul_angular.pop_back();
-
-    //Inserindo novos elementos no começo
-    memoria_azul_linear.insert(memoria_azul_linear.begin(),linear);
-    memoria_azul_angular.insert(memoria_azul_angular.begin(),angular);
-}
-
-
 double Strategy::controleAngular(double fi2) // função testada. lembrete : (sinal de w) = -(sinal de fi)
 {
     //double W_max = -0.3;    // constante limitante da tangente hiperbólica : deve ser negativa
@@ -219,13 +223,14 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
 
     Waux = limita_velocidade(Waux, Wmax); //satura em -1 a 1
 
-    return(Waux); //deve retornar um valor entre -1 e 1
+    return(Waux); //deve tetornar um valor entre -1 e 1
 }
+
 
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 {
     double  Vaux = 0;
-    double  k_lin = 0.8;   //constante de contração da tangente hiperbólica
+    double  k_lin = 2;   //constante de contração da tangente hiperbólica
     double  V_max = Vmax;       //constante limitante da tangente hiperbólica
     double  v_min = 0.03;  	 //módulo da velocidade linear mínima permitida
     double  ang_grande = 30; //para ângulos maiores que esse valor o sistema da prioridade ao W, reduzindo o V
@@ -235,14 +240,20 @@ double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 
     Vaux = V_max*tanh(k_lin*dist*angulo.flag);  //controle não linear de V
 
-    //if (Vaux*angulo.flag < v_min) Vaux = v_min*angulo.flag;  //aplica o valor definido em v_min
-
-                                                       //if (angulo.fi*angulo.flag > ang_grande) V = v_min*angulo.flag;  // controle de prioridade reduzindo V quando "ang_err" for grande
-    Vaux = Vaux*abs(cos(angulo.fi*M_PI / 180));// controle de prioridade reduzindo V quando "ang_err" for grande
+    if (Vaux*angulo.flag < v_min) Vaux = v_min*angulo.flag;  //aplica o valor definido em v_min
+    //if (angulo.fi*angulo.flag > ang_grande) V = v_min*angulo.flag;  // controle de prioridade reduzindo V quando "ang_err" for grande
+    Vaux = Vaux*cos(angulo.fi*M_PI / 180);// controle de prioridade reduzindo V quando "ang_err" for grande
 
     Vaux = limita_velocidade(Vaux, Vmax); //satura em -1 a 1
 
     return(Vaux);
+}
+
+double Strategy::limita_velocidade(double valor, double sat)
+{
+      if (valor > sat) {valor = sat;}
+      if (valor < -sat) {valor = -sat;}
+      return(valor);
 }
 
 ang_err Strategy::olhar(fira_message::Robot rb, double px, double py)   // função testada - ok!
@@ -279,45 +290,77 @@ ang_err Strategy::olhar(fira_message::Robot rb, double px, double py)   // funç
 
 double Strategy::distancia(fira_message::Robot rb, double px, double py)
 {
-      double dist = sqrt( pow((rb.x()-px),2) + pow((rb.y()-py),2) );
+      double dist = sqrt( pow((rb.x() - px),2) + pow((rb.y()-py),2) );
       return(dist);
-}
-
-double Strategy::limita_velocidade(double valor, double sat)
-{
-      if (valor > sat) {valor = sat;}
-      if (valor < -sat) {valor = -sat;}
-      return(valor);
-}
-
-//Vl = (V - WL)/R
-//Vr = (V + WL)/R
-//Limitando em +- 125
-//Resulta em Vmax = 2.5 e Wmax = 62.5
-void Strategy::cinematica_azul()
-{
-    for(int i = 0; i < qtdRobos; i++)
-    {
-        vRL[i][0] = (VW[i][0]+VW[i][1]*L)/R;
-        vRL[i][1] = (VW[i][0]-VW[i][1]*L)/R;
-
-        vRL[i][0] = limita_velocidade(vRL[i][0],vrMax);
-        vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
-    }
-}
-
-void Strategy::cinematica_amarelo()
-{
-    //TODO
-}
-
-void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
-                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
-{
-    //TODO
 }
 
 Strategy::~Strategy()
 {
+
+}
+
+//Verifica se o robô está perto da parede
+bool Strategy::robo_parede(fira_message::Robot rb){
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //se o robo estiver longe das paredes retorna falso, caso contrario retorna verdadeiro
+    if ((rb.x() <= lim_x) && (rb.x() >= -lim_x)&&(rb.y() <= lim_y) && (rb.y() >= -lim_y)){
+        return false;
+    }else{
+        return true;
+    }
+}
+
+
+//Vaipara com saturação nas posições enviadas
+void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
+{
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (px > lim_x)
+        px = lim_x;
+
+    if (px < -lim_x)
+        px = -lim_x;
+
+    if (py > lim_y)
+        py = lim_y;
+
+    if (py < -lim_y)
+        py = -lim_y;
+
+    //Calcula a velocidade nas rodas
+    VW[id][0] = controleLinear(rb,px,py);
+    ang_err angulo = olhar(rb, px, py);
+    VW[id][1] = controleAngular(angulo.fi);
+}
+
+//Verifica se o robo precisa se afastar de outros robos para evitar travamentos
+void Strategy::sai_robo(fira_message::Robot rb,fira_message::Robot ry,double F[]){
+
+     double raio_adversario = 0.2;  //raio de detecção do adversario
+
+     double dist_adversario = sqrt(pow((rb.x() - ry.x()),2) + pow((rb.y() - ry.y()),2)); //calcula distancia ate o adversario
+
+     if (dist_adversario <= raio_adversario){//se a bola estiver longe e o adversario perto
+         F[0] += (rb.x() - ry.x())/pow(raio_adversario,2);
+         F[1] += (rb.y() - ry.y())/pow(raio_adversario,2);
+     }
+}
+
+//limita o valor de um vetor
+void Strategy::converte_vetor(double V[],double raio){
+
+    double dist = sqrt(pow(V[0],2) + pow(V[1],2));
+
+    if (dist > raio){
+        V[0] = raio*V[0]/dist;
+        V[1] = raio*V[1]/dist;
+    }
 
 }
