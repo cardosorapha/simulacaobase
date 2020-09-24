@@ -1,4 +1,4 @@
-//author  Renato Sousa, 2018
+//author  GPRUFS 2020
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
                 Strategy estrategia;
-                estrategia.strategy_blue(b0,b1,b2,ball,field);
+                estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
 
                 //Enviando velocidades
                 for(int i = 0;i < estrategia.qtdRobos;i++)
