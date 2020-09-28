@@ -196,31 +196,19 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
-vector <double> destino = {ball.x(),ball.y()};
+    vector <double> destino = {0.0,0.0};
 
-//pontosX = inserirRRT(teste,pontosX,1);
-//pontosY = inserirRRT(teste,pontosY,1);
 
-/*
-double dist = sqrt(pow(pontosX[0] - b0.x(),2)+pow(pontosY[0] - b0.y(),2));
 
-if (dist < 0.05){
-    //atualiza vetor de x
-    pontosX.push_back(pontosX[0]);
-    pontosX.erase(pontosX.begin());
-    //atualiza vetor de y
-    pontosY.push_back(pontosY[0]);
-    pontosY.erase(pontosY.begin());
+goleiro(b0,b1,b2,y0,y1,y2,ball,0);
+zagueiro(b1,ball,1);
+if(ball.x() >= 0){
+    destino = {ball.x(),ball.y()};
+}else{
+    destino = {0.0,0.0};
 }
-*/
+vaiPara_desviando(b2,b0,b1,y0,y1,y2,destino,2);
 
-goleiro(b0,ball,0);
-
-//vaiPara_desviando(b0,b1,b2,y0,y1,y2,destino,0);
-vaiPara_desviando(b1,b0,b2,y0,y1,y2,destino,1);
-//vaiParaDinamico2(b0,ball.x(),ball.y(),0);
-
-//VW[0][0] = filtro(VW[0][0]);
 
 cinematica_azul();
 
@@ -647,13 +635,15 @@ void Strategy::goleiro2(fira_message::Robot rb,fira_message::Ball ball, int id){
 }
 
 // goleiro de David
-void Strategy::goleiro(fira_message::Robot rb,fira_message::Ball ball,int id){
+void Strategy::goleiro(fira_message::Robot rb,fira_message::Robot rb1,fira_message::Robot rb2,
+                       fira_message::Robot rb3, fira_message::Robot rb4,fira_message::Robot rb5,fira_message::Ball ball,int id){
 
   double top_limit = 0.4/2; //largura do gol/2
   double x_desejado = -1.4/2.0;
 
   if(distancia(rb,x_desejado,rb.y()) >= 0.02){
-      vaiPara(rb,x_desejado,0.0,id);
+      vector<double> teste{x_desejado,0.0};
+      vaiPara_desviando(rb,rb1,rb2,rb3,rb4,rb5,teste,id);
        printf("Entrou aqui/n");
     }
   else{
@@ -700,4 +690,24 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Ball ball,int id){
 
 void Strategy::chute(int id){
     VW[id][1] = -100;
+}
+
+void Strategy::zagueiro(fira_message::Robot rb, fira_message::Ball ball, int id){
+   double x_penalti =  0.4;
+   double x_meio_de_campo = 0.0;
+   double x_radius = 0.2;
+   double y_top = 0.35;
+   if(ball.x() >= x_penalti){
+       vaiPara(rb,x_meio_de_campo,ball.y(),id);
+   }else if(ball.x() >= x_meio_de_campo){
+       vaiPara(rb,-x_radius,ball.y(),id);
+   }else if(ball.x() >= -x_penalti){
+       vaiPara(rb,ball.x(),ball.y(),id);
+   }else if(ball.y() >= y_top && rb.y() <= ball.y()){
+       vaiPara(rb,ball.x(),ball.y(),id);
+   }else if(ball.y() <= -y_top && rb.y() >= ball.y()){
+       vaiPara(rb,ball.x(),ball.y(),id);
+   }else{
+       vaiPara(rb,-x_penalti -0.1, 0.0,id);
+   }
 }
