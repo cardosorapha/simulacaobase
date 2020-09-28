@@ -216,8 +216,8 @@ if (dist < 0.05){
 
 goleiro(b0,ball,0);
 
-vaiPara_desviando(b2,b1,b0,y0,y1,y2,destino,2);
-//vaiPara_desviando(b1,b0,b2,y0,y1,y2,destino,1);
+//vaiPara_desviando(b0,b1,b2,y0,y1,y2,destino,0);
+vaiPara_desviando(b1,b0,b2,y0,y1,y2,destino,1);
 //vaiParaDinamico2(b0,ball.x(),ball.y(),0);
 
 //VW[0][0] = filtro(VW[0][0]);
@@ -614,7 +614,6 @@ void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, in
 
     atualiza_memoria_azul(erro_linear,erro_angular);
 }
-
 //Goleiro de Petersson
 void Strategy::goleiro2(fira_message::Robot rb,fira_message::Ball ball, int id){
 
@@ -653,22 +652,22 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Ball ball,int id){
   double top_limit = 0.4/2; //largura do gol/2
   double x_desejado = -1.4/2.0;
 
-  if(distancia(rb,x_desejado,rb.y()) >= 0.02){ //se o robô está dentro do retângulo
+  if(distancia(rb,x_desejado,rb.y()) >= 0.02){
       vaiPara(rb,x_desejado,0.0,id);
        printf("Entrou aqui/n");
     }
   else{
-
+      //conserta angulação
       ang_err angulo = olhar(rb,rb.x(),top_limit + 5); // calcula diferença entre angulo atual e angulo desejado
       printf("%i\n", angulo.flag);
-      if(angulo.fi >= 0.5 || angulo.fi<= -0.5){ //se o robô não está aproximadamente 90 graus
+      if(angulo.fi >= 0.5 || angulo.fi<= -0.5){
           andarFrente(0,id);
 
           VW[id][1] = controleAngular(angulo.fi);
 
       }
 
-      else if(rb.y() < top_limit && rb.y() < ball.y()){ //robô abaixo da bola
+      else if(rb.y() < top_limit && rb.y() < ball.y()){
 
           if(angulo.flag == 1){
               andarFrente(100,id);
@@ -679,7 +678,7 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Ball ball,int id){
                printf("B\n");
           }
       }
-      else if(rb.y() > -top_limit && rb.y() > ball.y()){ //robô acima da bola
+      else if(rb.y() > -top_limit && rb.y() > ball.y()){
           if(angulo.flag == 1){
               andarFundo(100,id);
                printf("C\n");
@@ -692,7 +691,7 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Ball ball,int id){
       else{
           andarFrente(0,id);
       }
-      if(distancia(rb,ball.x(),ball.y()) < 0.2){ //robô proóximo da bola
+      if(distancia(rb,ball.x(),ball.y()) < 0.1){
           chute(id);
       }
   }
