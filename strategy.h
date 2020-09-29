@@ -80,6 +80,7 @@ class Strategy {
     void vaiPara_desviando(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                            fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                            vector <double> destino,int id);
+    void zagueiro(fira_message::Robot ,fira_message::Ball ,int);
   private:
 
     double L; //Distância entre roda e centro

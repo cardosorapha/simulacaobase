@@ -214,7 +214,7 @@ if (dist < 0.05){
 }
 */
 
-//goleiro(b0,ball,0);
+
 
 //vaiPara2(b0,predictedBall.x,predictedBall.y,0);
 double Xbola;
@@ -231,6 +231,10 @@ if (distancia(b2, ball.x(), ball.y()) > 0.5){
     Ybola = ball.y();
 
 }
+
+goleiro(b0,ball,0);
+zagueiro(b1,ball,1);
+
 vaiPara_hotwheels( b0, b1, b2, y0, y1, y2, Xbola,Ybola,2);
 //vaiPara_desviando(b1,b0,b2,y0,y1,y2,destino,1);
 //vaiParaDinamico2(b0,ball.x(),ball.y(),0);
@@ -825,4 +829,67 @@ void Strategy::vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,
             }
         }
 }
+
+void Strategy::zagueiro(fira_message::Robot rb,fira_message::Ball ball,int id){
+  double top_lim = 0.8/2;
+  double x_definido = -0.3;
+
+  if(distancia(rb,x_definido,rb.y()) >= 0.02){ //se o robô está dentro do retângulo
+      vaiPara(rb,x_definido,0.0,id);
+       printf("Entrou aqui/n");
+    }
+  else{
+
+      ang_err angulo = olhar(rb,rb.x(),top_lim + 5); // calcula diferença entre angulo atual e angulo desejado
+      printf("%i\n", angulo.flag);
+      if(angulo.fi >= 0.5 || angulo.fi<= -0.5){ //se o robô não está aproximadamente 90 graus
+          andarFrente(0,id);
+
+          VW[id][1] = controleAngular(angulo.fi);
+
+      }
+
+     else if(ball.y()<top_lim && ball.y()> -top_lim){
+
+          if( rb.y() < top_lim && rb.y() < ball.y() ){ //robô abaixo da bola
+
+                    if(angulo.flag == 1){
+                        andarFrente(100,id);
+                        printf("A\n");
+                    }
+                    else {
+                        andarFundo(100,id);
+                         printf("B\n");
+                    }
+                }
+                else if(rb.y() > -top_lim && rb.y() > ball.y()){ //robô acima da bola
+                    if(angulo.flag == 1){
+                        andarFundo(100,id);
+                         printf("C\n");
+                    }
+                      else {
+                        andarFrente(100,id);
+                         printf("B\n");
+                    }
+                }
+
+      }
+      else if( ball.y()>top_lim){
+          vaiPara(rb,-0.7, top_lim-0.1,id);
+           printf("D\n");
+      }
+      else if( ball.y()<-top_lim){
+          vaiPara(rb,-0.7, -top_lim+0.1,id);
+           printf("D\n");
+      }
+  }
+
+      if(distancia(rb,ball.x(),ball.y()) < 0.2){ //robô proóximo da bola
+          chute(id);
+      }
+
+  }
+
+
+
 
