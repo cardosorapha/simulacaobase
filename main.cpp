@@ -1,4 +1,4 @@
-//author  Renato Sousa, 2018
+//author  GPRUFS 2020
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
