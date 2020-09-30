@@ -213,6 +213,8 @@ if (dist < 0.05){
 }
 */
 
+vaiPara(b0,ball.x(),ball.y(),0);
+
 goleiro(b2,ball,2);
 
 //vaiPara_desviando(b0,b1,b2,y0,y1,y2,destino,0);
@@ -615,25 +617,50 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Ball ball, int id){
     double lim_x = 0.02;
     double lim_ang = 2;
 
+    vector <double> new_pos = {0,0};
+    double dist = distancia(rb,ball.x(),ball.y());
+
+    //se a bola estiver l
+    if ( dist > 0.7){
+        new_pos = {predictedBall.x,predictedBall.y};
+    }else{
+        new_pos = {ball.x(),ball.y()};
+    }
+
+    printf("%f\n",dist);
+
+    printf("%f %f\n",new_pos[0],new_pos[1]);
+
+    vector<double> destino ={-gol_x,0};
+
     //envia goleiro para o meio do gol antes de tudo
     if (rb.x() > -gol_x + lim_x || rb.x() < -gol_x - lim_x){
-       vaiParaDinamico(rb,-gol_x,rb.y(),id);
-       printf("ajustando posição\n");
+        vaiPara(rb,destino[0],destino[1],id);
     }else{
+
         ang_err angulo = olhar(rb,rb.x(),gol_top);
+
         if (angulo.fi > lim_ang || angulo.fi <-lim_ang){
             VW[id][1] = irponto_angular(rb,rb.x(),campo_y);
-            printf("ajustando angulo\n");
         }else{
-            if (ball.y() < gol_top && ball.y() >-gol_top){
-                 if (rb.y() > ball.y()){
-                     andarFrente(100,id);
-                     printf("seguindo bola\n");
-                 }else{
-                     andarFundo(100,id);
-                     printf("seguindo bola\n");
-                 }
+
+            //limita os valores superiores e inferiores que o goleiro pode ir
+            if(new_pos[1] > gol_top){
+                new_pos[1] = gol_top;
             }
+
+            if(new_pos[1] < -gol_top){
+                new_pos[1] = -gol_top;
+            }
+            //se a bola estiver acima faz o robô subir, se estiver abaixo faz ele descer
+            if(new_pos[1] > rb.y()){
+               andarFundo(125,id);
+            }
+
+            if(new_pos[1] < rb.y()){
+               andarFrente(125,id);
+            }
+
         }
     }
 }
