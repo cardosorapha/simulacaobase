@@ -44,6 +44,10 @@ class Strategy {
                        fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
                       ,fira_message::Ball ball, const fira_message::Field & field);
 
+    //Sobrecarga de Método
+    void strategy_blue(vector<fira_message::Robot> b, vector<fira_message::Robot> y
+                      ,fira_message::Ball ball, const fira_message::Field & field);
+
     void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                          fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
 

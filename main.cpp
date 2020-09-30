@@ -57,12 +57,26 @@ int main(int argc, char *argv[]){
                 //printf("  -goal_width=%f (mm)\n",field.goal_width());
                 //printf("  -goal_depth=%f (mm)\n",field.goal_depth());
 
+
                 //Robots info
                 //Blue
+               // vector<fira_message::Robot>* blue = NULL;
+               // blue = new vector<fira_message::Robot>(3);
+                //blue->push_back(detection.robots_blue(0));
+                //blue->push_back(detection.robots_blue(1));
+                //blue->push_back(detection.robots_blue(2));
+
                 fira_message::Robot b0 = detection.robots_blue(0);
                 fira_message::Robot b1 = detection.robots_blue(1);
                 fira_message::Robot b2 = detection.robots_blue(2);
+
                 //Yellow
+                //vector<fira_message::Robot>* yellow = NULL;
+               // yellow = new vector<fira_message::Robot>(3);
+               // yellow->push_back(detection.robots_yellow(0));
+               // yellow->push_back(detection.robots_yellow(1));
+                //yellow->push_back(detection.robots_yellow(2));
+
                 fira_message::Robot y0 = detection.robots_yellow(0);
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
@@ -73,6 +87,9 @@ int main(int argc, char *argv[]){
                 //Enviando velocidades
                 for(int i = 0;i < estrategia.qtdRobos;i++)
                     grSim_client.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],i);
+
+                //delete blue;
+                //delete yellow;
 
                 //Debug
                 //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
