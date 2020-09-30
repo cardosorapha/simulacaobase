@@ -1,4 +1,4 @@
-//author  GPRUFS 2020
+//author  Renato Sousa, 2018
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
     fira_message::sim_to_ref::Environment packet;
 
     GrSim_Client grSim_client;
-
+    Strategy estrategia;
     while(true) {
         if (client.receive(packet)) {
             //printf("-----Received Wrapper Packet---------------------------------------------\n");
@@ -47,6 +47,7 @@ int main(int argc, char *argv[]){
                 int robots_yellow_n =  detection.robots_yellow_size();
                 //Ball info:
                 fira_message::Ball ball = detection.ball();
+                estrategia.predict_ball(ball);
                 //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
 
                 //printf("-[Geometry Data]-------\n");
@@ -67,7 +68,6 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
-                Strategy estrategia;
                 estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
 
                 //Enviando velocidades
