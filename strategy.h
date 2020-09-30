@@ -71,7 +71,8 @@ class Strategy {
     double filtro(double V);
 
     vector<double> inserirRRT(vector<double>,vector<double>,int);
-    void goleiro(fira_message::Robot,fira_message::Ball,int);
+
+    void goleiro(fira_message::Robot rb0,fira_message::Ball ball, int id);
 
     void vaiPara_desviando(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                            fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
