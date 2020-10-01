@@ -60,9 +60,17 @@ class Strategy {
     double controleLinear(fira_message::Robot,double,double);
 
     //Alterações Petersson
-
+    double pos_robos[6][2];
+    double velocidades[6];
     void saturacao(double V[]);
-  private:
+    void atualiza_pos(fira_message::Robot b0,fira_message::Robot b1,fira_message::Robot b2,fira_message::Robot y0,fira_message::Robot y1,fira_message::Robot y2);
+    void calc_repulsao(fira_message::Robot rb, double F[]);
+    void converte_vetor(double V[],double);
+    double filtro(double V,int);
+    void vaiPara_desviando(fira_message::Robot,double,double,int);
+    void goleiro(fira_message::Robot,fira_message::Ball,int);
+    double irponto_angular(fira_message::Robot robot, double x, double y);
+private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
     void cinematica_azul(); //transforma V e W em Vr e Vl do time azul
