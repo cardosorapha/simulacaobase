@@ -1,4 +1,5 @@
-//author  Renato Sousa, 2018
+#ifndef STRATEGY_H
+#define STRATEGY_H
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
@@ -10,81 +11,60 @@
 #include "pb/packet.pb.h"
 #include "pb/replacement.pb.h"
 
-#include "strategy.h"
+struct ang_err
+{
+    double fi;
+    int flag;
+};
 
-#include <iostream>
 
-using namespace std;
+class Strategy {
+  public:
 
-void printRobotInfo(const fira_message::Robot & robot) {
+    Strategy();
+    ~Strategy();
 
-    printf("ID=%3d \n",robot.robot_id());
+    vector<vector<double>> vRL, VW;
 
-    printf(" POS=<%9.2f,%9.2f> \n",robot.x(),robot.y());
-    printf(" VEL=<%9.2f,%9.2f> \n",robot.vx(),robot.vy());
+    int qtdRobos, vrMax;
+    double Vmax, Wmax;
 
-    printf("ANGLE=%6.3f \n",robot.orientation());
-    printf("ANGLE VEL=%6.3f \n",robot.vorientation());
-}
+    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                       fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
+                      ,fira_message::Ball ball, const fira_message::Field & field);
 
-int main(int argc, char *argv[]){
-    (void)argc;
-    (void)argv;
-    RoboCupSSLClient client;
-    client.open(false);
-    fira_message::sim_to_ref::Environment packet;
+    void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
+                         fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
 
-    GrSim_Client grSim_client;
-    Strategy estrategia;
-    while(true) {
-        if (client.receive(packet)) {
-            //printf("-----Received Wrapper Packet---------------------------------------------\n");
-            //see if the packet contains a robot detection frame:
-            if ((packet.has_frame())&&(packet.has_field())) {
-                fira_message::Frame detection = packet.frame();
+    double irponto_linear(fira_message::Robot robot,double x, double y);
+    double irponto_angular(fira_message::Robot robot,double x, double y);
 
-                int robots_blue_n =  detection.robots_blue_size();
-                int robots_yellow_n =  detection.robots_yellow_size();
-                //Ball info:
-                fira_message::Ball ball = detection.ball();
-                estrategia.predict_ball(ball);
-                //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
+    void girarHorario(double,int);
+    void girarAntihorario(double,int);
+    void andarFrente(double,int);
+    void andarFundo(double,int);
+    void vaiPara(fira_message::Robot,double,double,int);
 
-                //printf("-[Geometry Data]-------\n");
-                const fira_message::Field & field = packet.field();
-                //printf("Field Dimensions:\n");
-                //printf("  -field_length=%f (mm)\n",field.length());
-                //printf("  -field_width=%f (mm)\n",field.width());
-                //printf("  -goal_width=%f (mm)\n",field.goal_width());
-                //printf("  -goal_depth=%f (mm)\n",field.goal_depth());
+;
+    double controleAngular(double);
+    double controleLinear(fira_message::Robot,double,double);
 
-                //Robots info
-                //Blue
-                fira_message::Robot b0 = detection.robots_blue(0);
-                fira_message::Robot b1 = detection.robots_blue(1);
-                fira_message::Robot b2 = detection.robots_blue(2);
-                //Yellow
-                fira_message::Robot y0 = detection.robots_yellow(0);
-                fira_message::Robot y1 = detection.robots_yellow(1);
-                fira_message::Robot y2 = detection.robots_yellow(2);
+    bool robo_parede(fira_message::Robot);
+    void vaiPara2(fira_message::Robot,double,double,int);
+    void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
+    void converte_vetor(double V[],double);
 
-                estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
+  private:
+    double L; //Distância entre roda e centro
+    double R; //Raio da roda
+    void cinematica_azul(); //transforma V e W em Vr e Vl do time azul
+    void cinematica_amarelo(); //transforma V e W em Vr e Vl do time amarelo
 
-                //Enviando velocidades
-                for(int i = 0;i < estrategia.qtdRobos;i++)
-                    grSim_client.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],i);
+    ang_err olhar(fira_message::Robot, double, double);
+    double distancia(fira_message::Robot,double,double);
+    double limita_velocidade(double, double);
 
-                //Debug
-                //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
-                //printf("W:%f\n",b2.vorientation());
-                //printf("Venviado:%f\n",estrategia.VW[2][0]);
-                //printf("Wenviado:%f\n",estrategia.VW[2][1]);
-                //printf("VR:%f\n",estrategia.vRL[2][0]);
-                //printf("VL:%f\n",estrategia.vRL[2][1]);
+};
 
-            }
-        }
-    }
+#endif // STRATEGY_H
 
-    return 0;
-}
