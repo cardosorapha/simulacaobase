@@ -55,11 +55,6 @@ int main(int argc, char *argv[]){
 
                 //printf("-[Geometry Data]-------\n");
                 const fira_message::Field & field = packet.field();
-                //printf("Field Dimensions:\n");
-                //printf("  -field_length=%f (mm)\n",field.length());
-                //printf("  -field_width=%f (mm)\n",field.width());
-                //printf("  -goal_width=%f (mm)\n",field.goal_width());
-                //printf("  -goal_depth=%f (mm)\n",field.goal_depth());
 
                 //Robots info
                 //Blue
@@ -71,19 +66,13 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
+                estrategia.atualiza_pos(b0,b1,b2,y0,y1,y2);
+
                 estrategia.strategy_blue(b0,b1,b2,ball,field);
 
                 //Enviando velocidades
                 for(int i = 0;i < estrategia.qtdRobos;i++)
                     grSim_client.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],i);
-
-                //Debug
-                //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
-                //printf("W:%f\n",b2.vorientation());
-                //printf("Venviado:%f\n",estrategia.VW[2][0]);
-                //printf("Wenviado:%f\n",estrategia.VW[2][1]);
-                //printf("VR:%f\n",estrategia.vRL[2][0]);
-                //printf("VL:%f\n",estrategia.vRL[2][1]);
 
             }
         }
