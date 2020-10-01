@@ -59,6 +59,9 @@ class Strategy {
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
 
+    //Alterações Petersson
+
+    void saturacao(double V[]);
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
@@ -73,6 +76,7 @@ class Strategy {
     ang_err olhar(fira_message::Robot, double, double);
     double distancia(fira_message::Robot,double,double);
     double limita_velocidade(double, double);
+
 };
 
 #endif // STRATEGY_H
