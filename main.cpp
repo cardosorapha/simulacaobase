@@ -1,4 +1,4 @@
-//author  GPRUFS 2020
+//author  Renato Sousa, 2018
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
@@ -13,14 +13,8 @@
 #include "strategy.h"
 
 #include <iostream>
-/*#include <opencv4/opencv2/opencv.hpp>
-#include <opencv4/opencv2/core/mat.hpp>
-#include <opencv4/opencv2/calib3d/calib3d.hpp>
-#include <opencv4/opencv2/highgui/highgui.hpp>
-#include <opencv4/opencv2/imgproc/imgproc.hpp>*/
 
 using namespace std;
-//using namespace cv;
 
 void printRobotInfo(const fira_message::Robot & robot) {
 
@@ -42,7 +36,8 @@ int main(int argc, char *argv[]){
 
     GrSim_Client grSim_client;
 
-
+    //inicialização da classe estratégia
+    Strategy estrategia;
 
     while(true) {
         if (client.receive(packet)) {
@@ -55,6 +50,7 @@ int main(int argc, char *argv[]){
                 int robots_yellow_n =  detection.robots_yellow_size();
                 //Ball info:
                 fira_message::Ball ball = detection.ball();
+                estrategia.predict_ball(ball);
                 //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
 
                 //printf("-[Geometry Data]-------\n");
@@ -67,21 +63,19 @@ int main(int argc, char *argv[]){
 
                 //Robots info
                 //Blue
-                Team *blue = NULL;
-                blue = new Team(detection.robots_blue(0),detection.robots_blue(1),detection.robots_blue(2));
+                fira_message::Robot b0 = detection.robots_blue(0);
+                fira_message::Robot b1 = detection.robots_blue(1);
+                fira_message::Robot b2 = detection.robots_blue(2);
                 //Yellow
-                Team *yellow = NULL;
-                yellow = new Team(detection.robots_yellow(0),detection.robots_yellow(1),detection.robots_yellow(2));
+                fira_message::Robot y0 = detection.robots_yellow(0);
+                fira_message::Robot y1 = detection.robots_yellow(1);
+                fira_message::Robot y2 = detection.robots_yellow(2);
 
-                Strategy estrategia;
-                estrategia.strategy_blue(*blue,*yellow,ball,field);
+                estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
 
                 //Enviando velocidades
                 for(int i = 0;i < estrategia.qtdRobos;i++)
                     grSim_client.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],i);
-
-                delete blue;
-                delete yellow;
 
                 //Debug
                 //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));

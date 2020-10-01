@@ -33,7 +33,7 @@ Strategy::Strategy()
     predictedBall = temp;
 
     //Inicialização dos vetores de memória PID
-    int N_mem = 5;
+    int N_mem = 10;
 
     for(int i=0; i < N_mem; i++)
     {
@@ -96,46 +96,80 @@ void Strategy::predict_ball(fira_message::Ball ball)
     this->predictedBall = result;
 }
 
-//Estratégia azul
 void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                              fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
-    vector <double> destino = {0.0,0.0};
+    vector <double> destino = {ball.x(),ball.y()};
 
 
+    //vaiPara2(b0,predictedBall.x,predictedBall.y,0);
+    double Xbola;
+    double Ybola;
 
-goleiro(b0,b1,b2,y0,y1,y2,ball,0);
-_zagueiro(b1,ball,1);
-//if(ball.x() >= 0){
-    destino = {ball.x(),ball.y()};
-//}else{
-   // destino = {0.0,0.0};
-//}
-vaiPara_desviando(b2,b0,b1,y0,y1,y2,destino,2);
+    if (distancia(b2, ball.x(), ball.y()) > 0.5){
 
+        Xbola = predictedBall.x;
+        Ybola = predictedBall.y;
 
-cinematica_azul();
+    }else{
+
+        Xbola = ball.x();
+        Ybola = ball.y();
+    }
+
+    goleiro(b0,ball.x(), ball.y(),0);
+
+    zagueiro2(b1,ball.x(), ball.y(),1);
+
+    if(7 == 7){
+       vaiPara_hotwheels(b0, b1, b2, y0, y1, y2, Xbola,Ybola,2);
+    }
+
+    cinematica_azul();
 
 }
 
-void Strategy::strategy_blue(Team blue, Team Yellow, fira_message::Ball ball, const fira_message::Field &field)
+void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
+                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
 {
-vector <double> destino = {ball.x(),ball.y()};
-
-goleiro(blue[0],blue[1],blue[2],Yellow[0],Yellow[1],Yellow[2],ball,0);
-_zagueiro(blue[1],ball,1);
-vaiPara_desviando(blue[2],blue[0],blue[1],Yellow[0],Yellow[1],Yellow[2],destino,2);
-cinematica_azul();
-
+    //TODO
 }
 
+//Vl = (V - WL)/R
+//Vr = (V + WL)/R
+//Limitando em +- 125
+//Resulta em Vmax = 2.5 e Wmax = 62.5
+
+//Calcula as velocidades a serem enviadas ao robô, utilizando cinematica inversa
+void Strategy::cinematica_azul()
+{
+    for(int i = 0; i < qtdRobos; i++)
+    {
+        vRL[i][0] = (VW[i][0]+VW[i][1]*L)/R;
+        vRL[i][1] = (VW[i][0]-VW[i][1]*L)/R;
+
+        vRL[i][0] = limita_velocidade(vRL[i][0],vrMax);
+        vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
+    }
+}
 void Strategy::andarFrente(double vel, int id)
 {
     double Vaux = vel/vrMax;
     VW[id][0] = Vmax*Vaux;
     VW[id][1] = 0;
+}
+void Strategy::cinematica_amarelo()
+{
+    for(int i = 0; i < qtdRobos; i++)
+    {
+        vRL[i][0] = (VW[i][0] + VW[i][1]*L)/R;
+        vRL[i][1] = (VW[i][0] - VW[i][1]*L)/R;
+
+        vRL[i][0] = limita_velocidade(vRL[i][0],vrMax);
+        vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
+    }
 }
 
 void Strategy::andarFundo(double vel, int id)
@@ -175,8 +209,8 @@ void Strategy::vaiParaDinamico(fira_message::Robot rb, double px, double py, int
     double V = 0;
     double W = 0;
 
-    double Kp_l = 0.6;
-    double Ki_l = 0.1;
+    double Kp_l = 5;
+    double Ki_l = 1;
     double Kd_l = 0.01;
 
     double Kp_a = 0.15;
@@ -216,7 +250,6 @@ void Strategy::atualiza_memoria_azul(double linear, double angular)
     memoria_azul_angular.insert(memoria_azul_angular.begin(),angular);
 }
 
-
 double Strategy::controleAngular(double fi2) // função testada. lembrete : (sinal de w) = -(sinal de fi)
 {
     //double W_max = -0.3;    // constante limitante da tangente hiperbólica : deve ser negativa
@@ -236,9 +269,9 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 {
     double  Vaux = 0;
-    double  k_lin = 0.8;   //constante de contração da tangente hiperbólica
+    double  k_lin = 4;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
     double  V_max = Vmax;       //constante limitante da tangente hiperbólica
-    double  v_min = 0.03;  	 //módulo da velocidade linear mínima permitida
+    double  v_min = 0.5;  	 //módulo da velocidade linear mínima permitida Rapha colocou 0.03
     double  ang_grande = 30; //para ângulos maiores que esse valor o sistema da prioridade ao W, reduzindo o V
     double  dist = distancia(rb, px, py);
 
@@ -248,7 +281,7 @@ double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 
     //if (Vaux*angulo.flag < v_min) Vaux = v_min*angulo.flag;  //aplica o valor definido em v_min
 
-                                                       //if (angulo.fi*angulo.flag > ang_grande) V = v_min*angulo.flag;  // controle de prioridade reduzindo V quando "ang_err" for grande
+    //if (angulo.fi*angulo.flag > ang_grande) V = v_min*angulo.flag;  // controle de prioridade reduzindo V quando "ang_err" for grande
     Vaux = Vaux*abs(cos(angulo.fi*M_PI / 180));// controle de prioridade reduzindo V quando "ang_err" for grande
 
     Vaux = limita_velocidade(Vaux, Vmax); //satura em -1 a 1
@@ -301,36 +334,237 @@ double Strategy::limita_velocidade(double valor, double sat)
       return(valor);
 }
 
-//Vl = (V - WL)/R
-//Vr = (V + WL)/R
-//Limitando em +- 125
-//Resulta em Vmax = 2.5 e Wmax = 62.5
-void Strategy::cinematica_azul()
-{
-    for(int i = 0; i < qtdRobos; i++)
-    {
-        vRL[i][0] = (VW[i][0]+VW[i][1]*L)/R;
-        vRL[i][1] = (VW[i][0]-VW[i][1]*L)/R;
-
-        vRL[i][0] = limita_velocidade(vRL[i][0],vrMax);
-        vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
-    }
-}
-
-void Strategy::cinematica_amarelo()
-{
-    //TODO
-}
-
-void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
-                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
-{
-    //TODO
-}
-
 Strategy::~Strategy()
 {
 
+}
+
+//Verifica se o robô está perto da parede
+bool Strategy::robo_parede(fira_message::Robot rb){
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //se o robo estiver longe das paredes retorna falso, caso contrario retorna verdadeiro
+    if ((rb.x() <= lim_x) && (rb.x() >= -lim_x)&&(rb.y() <= lim_y) && (rb.y() >= -lim_y)){
+        return false;
+    }else{
+        return true;
+    }
+}
+
+
+//Vaipara com saturação nas posições enviadas
+void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
+{
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (px > lim_x)
+        px = lim_x;
+
+    if (px < -lim_x)
+        px = -lim_x;
+
+    if (py > lim_y)
+        py = lim_y;
+
+    if (py < -lim_y)
+        py = -lim_y;
+
+    //Calcula a velocidade nas rodas
+    VW[id][0] = controleLinear(rb,px,py);
+    ang_err angulo = olhar(rb, px, py);
+    VW[id][1] = controleAngular(angulo.fi);
+}
+
+//Verifica se o robo precisa se afastar de outros robos para evitar travamentos
+void Strategy::sai_robo(fira_message::Robot rb,fira_message::Robot ry,double F[]){
+
+     double raio_adversario = 1;  //raio de detecção do adversario
+
+     double dist_adversario = sqrt(pow((rb.x() - ry.x()),2) + pow((rb.y() - ry.y()),2)); //calcula distancia ate o adversario
+
+     if (dist_adversario <= raio_adversario){//se a bola estiver longe e o adversario perto
+         F[0] += (rb.x() - ry.x())/pow(raio_adversario,2);
+         F[1] += (rb.y() - ry.y())/pow(raio_adversario,2);
+     }
+}
+
+//Verifica se o robo precisa se afastar de outros robos para evitar travamentos
+void Strategy::sai_robo2(fira_message::Robot rb,fira_message::Robot ry,double F[]){
+
+     double raio_adversario = 0.2;  //raio de detecção do adversario
+
+     double dist_adversario = sqrt(pow((rb.x() - ry.x()),2) + pow((rb.y() - ry.y()),2)); //calcula distancia ate o adversario
+     double dist_x = rb.x() - ry.x();
+     double dist_y = rb.y() - ry.y();
+
+     if (dist_adversario <= raio_adversario){//se a bola estiver longe e o adversario perto
+         F[0] += raio_adversario*dist_x/dist_adversario - dist_x;
+         F[1] += raio_adversario*dist_y/dist_adversario - dist_y;
+     }
+}
+
+//limita o valor de um vetor
+void Strategy::converte_vetor(double V[],double raio){
+
+    double dist = sqrt(pow(V[0],2) + pow(V[1],2));
+
+    if (dist > raio){
+        V[0] = raio*V[0]/dist;
+        V[1] = raio*V[1]/dist;
+    }
+
+}
+
+double Strategy::filtro(double V){
+/*
+    //Media móvel
+    static vector<double> V_vector = {0,0,0,0,0};
+    double sum = 0;
+
+    V_vector.erase(V_vector.begin());
+    V_vector.push_back(V);
+
+    for (int i = 0;i < (int)V_vector.size() ; i++){
+        sum = sum + V_vector[i];
+    }
+
+    V = sum/V_vector.size();
+
+*/
+
+    //filtro IIR
+    static double V_antigo = 0;
+    double k = 0.5;
+
+    V = V_antigo*(1-k) + V*k;
+    V_antigo = V;
+
+
+    return V;
+}
+
+vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int opcao){
+    //Se a opção for zero concatena os vetores, senao apaga tudo e insere o novo vetor no lugar
+    if (opcao == 0){
+        V_out.insert(V_out.end(),V_in.begin(),V_in.end());
+    }else{
+        V_out.clear();
+        V_out.insert(V_out.end(),V_in.begin(),V_in.end());
+    }
+    return V_out;
+}
+
+void Strategy::vaiPara_desviando(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                                 fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                                 vector <double> destino,int id){
+
+    double V[2] = {destino[0] - b0.x(),destino[1] - b0.y()};
+
+    double F[2] = {0,0};
+
+    sai_robo2(b0,y0,F);
+    sai_robo2(b0,y1,F);
+    sai_robo2(b0,y2,F);
+
+    sai_robo2(b0,b1,F);
+    sai_robo2(b0,b2,F);
+
+    converte_vetor(V,0.1);
+    converte_vetor(F,0.2);
+
+    double ka = 1;
+    double kr = 1;
+
+    //aplicação do campo potencial para redefinir a nova posição que o robo deve ir desviando dos obstáculos
+    //posição do robo + constante de atração ka * atração do destino V + constante de repulsao kr * repulsao dos outros robos F
+    double new_pos[2] = {b0.x() + ka*V[0] + kr*F[0],b0.y() + ka*V[1] + kr*F[1]};
+
+    vaiParaDinamico2(b0,new_pos[0],new_pos[1],id);
+
+    VW[id][0] = filtro(VW[id][0]);
+}
+
+
+void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, int id)
+{
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (px > lim_x)
+        px = lim_x;
+
+    if (px < -lim_x)
+        px = -lim_x;
+
+    if (py > lim_y)
+        py = lim_y;
+
+    if (py < -lim_y)
+        py = -lim_y;
+
+    ang_err angulo = olhar(rb, px, py);
+    double erro_angular = angulo.fi; //de -180 a 180
+
+    double dist = distancia(rb,px,py);
+
+    double erro_linear = angulo.flag*dist;/////
+
+    double V = 0;
+    double W = 0;
+
+//    double Kp_l = 5;
+  //  double Ki_l = 10;
+  //  double Kd_l = 1;
+
+    double Kp_l = 1;
+    double Ki_l = 1;
+    double Kd_l = 1;
+
+  //  double Kp_a = 0.15;
+  //  double Ki_a = 0.02;
+  //  double Kd_a = 0.01;
+
+    double Kp_a = 0.2;
+    double Ki_a = 0.5;
+    double Kd_a = 0.1;
+
+    double temp_integral_l = 0;
+    double temp_integral_a = 0;
+
+    for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
+    {
+        temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
+    }
+
+    for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
+    {
+        temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
+    }
+
+    V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
+
+    W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
+
+    double sat = 0.8;
+
+    if (V > 0 && V< sat){
+        V = sat;
+    }
+    if (V < 0 && V>-sat){
+        V = -sat;
+    }
+
+    VW[id][0] = V;
+    VW[id][1] = W;
+
+    atualiza_memoria_azul(erro_linear,erro_angular);
 }
 
 //Goleiro de Petersson
@@ -366,29 +600,27 @@ void Strategy::goleiro2(fira_message::Robot rb,fira_message::Ball ball, int id){
 }
 
 // goleiro de David
-void Strategy::goleiro(fira_message::Robot rb,fira_message::Robot rb1,fira_message::Robot rb2,
-                       fira_message::Robot rb3, fira_message::Robot rb4,fira_message::Robot rb5,fira_message::Ball ball,int id){
+void Strategy::goleiro(fira_message::Robot rb,double xbola,double ybola,int id){
 
   double top_limit = 0.4/2; //largura do gol/2
   double x_desejado = -1.4/2.0;
 
-  if(distancia(rb,x_desejado,rb.y()) >= 0.02){
-      vector<double> teste{x_desejado,0.0};
-      vaiPara_desviando(rb,rb1,rb2,rb3,rb4,rb5,teste,id);
+  if(distancia(rb,x_desejado,rb.y()) >= 0.02){ //se o robô está dentro do retângulo
+      vaiPara(rb,x_desejado,0.0,id);
        printf("Entrou aqui/n");
     }
   else{
-      //conserta angulação
+
       ang_err angulo = olhar(rb,rb.x(),top_limit + 5); // calcula diferença entre angulo atual e angulo desejado
       printf("%i\n", angulo.flag);
-      if(angulo.fi >= 0.5 || angulo.fi<= -0.5){
+      if(angulo.fi >= 0.5 || angulo.fi<= -0.5){ //se o robô não está aproximadamente 90 graus
           andarFrente(0,id);
 
           VW[id][1] = controleAngular(angulo.fi);
 
       }
 
-      else if(rb.y() < top_limit && rb.y() < ball.y()){
+      else if(rb.y() < top_limit && rb.y() < ybola){ //robô abaixo da bola
 
           if(angulo.flag == 1){
               andarFrente(100,id);
@@ -399,7 +631,7 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Robot rb1,fira_messa
                printf("B\n");
           }
       }
-      else if(rb.y() > -top_limit && rb.y() > ball.y()){
+      else if(rb.y() > -top_limit && rb.y() > ybola){ //robô acima da bola
           if(angulo.flag == 1){
               andarFundo(100,id);
                printf("C\n");
@@ -412,7 +644,7 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Robot rb1,fira_messa
       else{
           andarFrente(0,id);
       }
-      if(distancia(rb,ball.x(),ball.y()) < 0.1){
+      if(distancia(rb,xbola,ybola) < 0.2){ //robô proóximo da bola
           chute(id);
       }
   }
@@ -422,30 +654,136 @@ void Strategy::goleiro(fira_message::Robot rb,fira_message::Robot rb1,fira_messa
 void Strategy::chute(int id){
     VW[id][1] = -100;
 }
+void Strategy::vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                                 fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                                 double px, double py,int id){
 
-//Zagueiro david
-void Strategy::zagueiro(fira_message::Robot rb, fira_message::Ball ball, int id){
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (px > lim_x)
+        px = lim_x;
+
+    if (px < -lim_x)
+        px = -lim_x;
+
+    if (py > lim_y)
+        py = lim_y;
+
+    if (py < -lim_y)
+        py = -lim_y;
+
+    double V[2];
+    double F[2]= {0,0};
+    double new_pos[2];
+    double ka = 1;
+    double kr = 1;
+
+    if(id == 0){
+
+        double V[2] = {px - b0.x(),py - b0.y()};
+
+
+
+        sai_robo2(b0,y0,F);
+        sai_robo2(b0,y1,F);
+        sai_robo2(b0,y2,F);
+
+        sai_robo2(b0,b1,F);
+        sai_robo2(b0,b2,F);
+
+        converte_vetor(V,0.1);
+        converte_vetor(F,0.2);
+
+
+        double new_pos[2] = {b0.x() + ka*V[0] + kr*F[0],b0.y() + ka*V[1] + kr*F[1]};
+
+        vaiPara2(b0,new_pos[0],new_pos[1],id);
+
+        VW[id][0] = filtro(VW[id][0]);
+
+    }
+        else{
+
+            if (id == 1){
+
+                double V[2] = {px - b1.x(),py - b1.y()};
+
+
+
+                sai_robo2(b1,y0,F);
+                sai_robo2(b1,y1,F);
+                sai_robo2(b1,y2,F);
+
+                sai_robo2(b1,b0,F);
+                sai_robo2(b1,b2,F);
+
+                converte_vetor(V,0.1);
+                converte_vetor(F,0.2);
+
+
+                double new_pos[2] = {b1.x() + ka*V[0] + kr*F[0],b1.y() + ka*V[1] + kr*F[1]};
+
+                vaiPara2(b1,new_pos[0],new_pos[1],id);
+
+                VW[id][1] = filtro(VW[id][1]);
+
+
+            }
+            else{
+
+
+
+                double V[2] = {px - b2.x(),py - b2.y()};
+
+
+
+                sai_robo2(b2,y0,F);
+                sai_robo2(b2,y1,F);
+                sai_robo2(b2,y2,F);
+
+                sai_robo2(b2,b0,F);
+                sai_robo2(b2,b1,F);
+
+                converte_vetor(V,0.1);
+                converte_vetor(F,0.2);
+
+
+                double new_pos[2] = {b2.x() + ka*V[0] + kr*F[0],b2.y() + ka*V[1] + kr*F[1]};
+
+                vaiPara2(b2,new_pos[0],new_pos[1],id);
+
+                VW[id][2] = filtro(VW[id][2]);
+
+
+
+            }
+        }
+}
+// Zagueiro David
+void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int id){
    double x_penalti =  0.4;
    double x_meio_de_campo = 0.0;
    double x_radius = 0.2;
    double y_top = 0.35;
-   if(ball.x() >= x_penalti){
-       vaiPara(rb,x_meio_de_campo,ball.y(),id);
-   }else if(ball.x() >= x_meio_de_campo){
-       vaiPara(rb,-x_radius,ball.y(),id);
-   }else if(ball.x() >= -x_penalti){
-       vaiPara(rb,ball.x(),ball.y(),id);
-   }else if(ball.y() >= y_top && rb.y() <= ball.y()){
-       vaiPara(rb,ball.x(),ball.y(),id);
-   }else if(ball.y() <= -y_top && rb.y() >= ball.y()){
-       vaiPara(rb,ball.x(),ball.y(),id);
+   if(xbola >= x_penalti){
+       vaiPara(rb,x_meio_de_campo,ybola,id);
+   }else if(xbola >= x_meio_de_campo){
+       vaiPara(rb,-x_radius,ybola,id);
+   }else if(xbola >= -x_penalti){
+       vaiPara(rb,xbola,ybola,id);
+   }else if(ybola >= y_top && rb.y() <= ybola){
+       vaiPara(rb,xbola,ybola,id);
+   }else if(ybola <= -y_top && rb.y() >= ybola){
+       vaiPara(rb,xbola,ybola,id);
    }else{
        vaiPara(rb,-x_penalti -0.1, 0.0,id);
    }
 }
-//Zagueiro david + cone
-void Strategy::_zagueiro(fira_message::Robot rb, fira_message::Ball ball, int id)
-{
+// Zagueiro David + Cone
+void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int id){
     double x_penalti =  0.4;
     double x_meio_de_campo = 0.0;
     double x_radius = 0.2;
@@ -453,45 +791,53 @@ void Strategy::_zagueiro(fira_message::Robot rb, fira_message::Ball ball, int id
     double ala_deepth = 0.3;
     double K_press = 0.2;
 
-
-    if(ball.x() > x_penalti)
+    if(xbola > x_penalti)
     {    //Se a Bola estiver na zona "A"
-        vaiPara(rb,x_meio_de_campo + K_press,ball.y(),id);
+        vaiPara(rb,x_meio_de_campo + K_press + 0.1,ybola,id);
+        printf("AAA !! \n");
     }
-    else if(ball.x() >= x_meio_de_campo
-            && (ball.y() < (y_top - ala_deepth)
-               && ball.y() > (ala_deepth - y_top)))
+    else if(xbola >= x_meio_de_campo
+            && (ybola < (y_top - ala_deepth)
+               && ybola > (ala_deepth - y_top)))
     {    //Se a Bola estiver na zona "B_mid"
-        vaiPara(rb,-x_penalti,ball.y(),id);
+        vaiPara(rb,-x_penalti,ybola,id);
+        printf("BBB mid !! \n");
     }
-    else if((ball.x() >= x_meio_de_campo
-             &&(ball.y() > (y_top - ala_deepth) || ball.y() < (ala_deepth - y_top))))
+    else if((xbola >= x_meio_de_campo)
+             && (ybola > (y_top - ala_deepth) || ybola < (ala_deepth - y_top)))
     {    //Se a Bola estiver na zona "B_top" ou "B_bot"
-        vaiPara(rb,-x_radius,ball.y(),id);
+        vaiPara(rb,-x_radius,ybola,id);
+        printf("BBB top ou bot !! \n");
     }
-    else if(ball.x() < x_meio_de_campo
-            && ball.x() > rb.x()
-              && (ball.y() < (y_top - ala_deepth)
-                && ball.y() > (ala_deepth - y_top)))
+    else if(xbola < x_meio_de_campo
+            && xbola > rb.x()
+              && (ybola < (y_top - ala_deepth)
+                && ybola > (ala_deepth - y_top)))
     {    //Se a Bola estiver na zona "C"
-        vaiPara(rb,ball.x(),ball.y(),id);
+        vaiPara(rb,xbola,ybola,id);
+        printf("CCC !! \n");
     }
-    else if((ball.x() < x_meio_de_campo
-             && ball.y() > (y_top - ala_deepth)))
+    else if((xbola < x_meio_de_campo
+             && ybola > (y_top - ala_deepth)))
     {    //Se a Bola estiver na zona "D"
-        vaiPara(rb,ball.x(),y_top - ala_deepth,id);
+        vaiPara(rb,xbola,y_top - ala_deepth,id);
+        printf("DDD !! \n");
     }
-    else if((ball.x() < x_meio_de_campo
-             && ball.y() < (ala_deepth - y_top)))
+    else if((xbola < x_meio_de_campo)
+             && ybola < (ala_deepth - y_top))
     {    //Se a Bola estiver na zona "E"
-        vaiPara(rb,ball.x(),ala_deepth - y_top,id);
+        vaiPara(rb,xbola,ala_deepth - y_top,id);
+        printf("EEE !! \n");
     }
     else
     {
+        printf("tururu !! \n");
         vaiPara(rb,-x_penalti -0.1, 0.0,id);
     }
 
-    if((distancia(rb,ball.x(),ball.y()) < 0.08) && (ball.x() > rb.x())){
-        chute(id);
-    }
+   // if((distancia(rb,xbola,ybola) < 0.08) && (xbola > rb.x())){
+   //     chute(id);
+   // }
+
+
 }
