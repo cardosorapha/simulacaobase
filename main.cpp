@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
-                estrategia.strategy_blue(b0,b1,b2,ball,field);
+                estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
 
                 //Enviando velocidades
                 for(int i = 0;i < estrategia.qtdRobos;i++)
