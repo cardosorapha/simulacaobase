@@ -17,6 +17,7 @@ struct ang_err
     int flag;
 };
 
+
 //Estrutura para simplificar o uso do preditor
 //da bola.
 struct ballPredPos
@@ -24,6 +25,7 @@ struct ballPredPos
     double x;
     double y;
 };
+
 
 class Strategy {
   public:
@@ -54,19 +56,16 @@ class Strategy {
     void girarAntihorario(double,int);
     void andarFrente(double,int);
     void andarFundo(double,int);
-
     void vaiPara(fira_message::Robot,double,double,int);
+
     void vaiParaDinamico(fira_message::Robot,double,double,int);
     void vaiParaDinamico2(fira_message::Robot,double,double,int);
+    double controleAngular(double);
+    double controleLinear(fira_message::Robot,double,double);
     void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                      fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                      double px, double py,int id);
-
-    double controleAngular(double);
-    double controleLinear(fira_message::Robot,double,double);
-
     bool robo_parede(fira_message::Robot);
-
     void vaiPara2(fira_message::Robot,double,double,int);
     void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
     void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
@@ -83,7 +82,6 @@ class Strategy {
     void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro2(fira_message::Robot, double, double, int);
   private:
-
     double L; //Distância entre roda e centro
     double R; //Raio da roda
     void cinematica_azul(); //transforma V e W em Vr e Vl do time azul
@@ -93,10 +91,10 @@ class Strategy {
     vector<double> memoria_azul_linear;
     vector<double> memoria_azul_angular;
 
+
     ang_err olhar(fira_message::Robot, double, double);
     double distancia(fira_message::Robot,double,double);
     double limita_velocidade(double, double);
-
 };
 
 #endif // STRATEGY_H

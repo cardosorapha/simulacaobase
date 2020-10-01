@@ -1,4 +1,4 @@
-//author  GPRUFS 2020
+//author  Renato Sousa, 2018
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
@@ -35,6 +35,8 @@ int main(int argc, char *argv[]){
     fira_message::sim_to_ref::Environment packet;
 
     GrSim_Client grSim_client;
+
+    //inicialização da classe estratégia
     Strategy estrategia;
 
     while(true) {
@@ -52,8 +54,6 @@ int main(int argc, char *argv[]){
                 //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
 
                 //printf("-[Geometry Data]-------\n");
-
-
                 const fira_message::Field & field = packet.field();
                 //printf("Field Dimensions:\n");
                 //printf("  -field_length=%f (mm)\n",field.length());
@@ -71,9 +71,7 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
-
                 estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
-
 
                 //Enviando velocidades
                 for(int i = 0;i < estrategia.qtdRobos;i++)
