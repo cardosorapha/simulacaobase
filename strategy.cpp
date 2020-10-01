@@ -250,45 +250,6 @@ void Strategy::atualiza_memoria_azul(double linear, double angular)
     memoria_azul_angular.insert(memoria_azul_angular.begin(),angular);
 }
 
-//Calcula o esforço necessário para um robô chegar em um ponto a partir da tangente hiperbolica da distância euclidiana
-double Strategy::irponto_linear(fira_message::Robot robot, double x, double y)
-{
-    double err_x = x-robot.x();
-    double err_y = y-robot.y();
-    double dtheta = 0;
-    double dp = 0;
-    double V = 0;
-
-    dp = sqrt(pow(err_x,2)+pow(err_y,2));
-
-    V = Vmax*tanh(0.3*dp);
-    return V;
-}
-
-//Calcula o esforço para girar o robô em direção a um determinado ponto
-double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
-{
-    //Precisa saber se olha de frente ou de costas
-    //Ângulos são em radianos
-    double err_x = x - robot.x();
-    double err_y = y - robot.y();
-    double theta = 0;
-    double dtheta_frente = 0;
-    double dtheta_costas = 0;
-    double dtheta = 0;
-    double W = 0;
-
-    theta = atan2(err_y,err_x); //Ângulo desejado
-
-    dtheta_frente = theta-robot.orientation();
-    dtheta_costas = theta-(robot.orientation()+M_PI);
-   // dtheta_costas = theta-robot.orientation()+M_PI;
-    dtheta = (dtheta_frente<dtheta_costas)?(dtheta_frente):(dtheta_costas); //O menor é o executado, não tá muito certo
-
-    W = Wmax*tanh(0.03*dtheta);
-    return W;
-}
-
 double Strategy::controleAngular(double fi2) // função testada. lembrete : (sinal de w) = -(sinal de fi)
 {
     //double W_max = -0.3;    // constante limitante da tangente hiperbólica : deve ser negativa
