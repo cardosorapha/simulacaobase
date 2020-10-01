@@ -51,7 +51,7 @@ void GrSim_Client::sendCommand(double velE, double velD, int id)
     dgram.resize(packet.ByteSize());
     packet.SerializeToArray(dgram.data(), dgram.size());
     if(socket->writeDatagram(dgram, this->_addr, this->_port) > -1){
-        printf("send data\n");
+        //printf("send data\n");
     }
 }
 
