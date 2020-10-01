@@ -96,30 +96,6 @@ void Strategy::predict_ball(fira_message::Ball ball)
     this->predictedBall = result;
 }
 
-void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
-                   fira_message::Robot b2, fira_message::Ball ball, const fira_message::Field & field)
-{
-
-    ang_err angulo = olhar(b0, predictedBall.x, predictedBall.y);
-
-    //VW[0][1] = controleAngular(angulo.fi);
-    vaiParaDinamico(b0,ball.x(),ball.y(),0);
-
-    //printf("Orientacao:%f\n",b0.orientation()*180/M_PI);
-    //printf("Angulo:%f\n",angulo.fi);
-    //printf("V:%f\n",VW[0][0]);
-    //printf("W:%f\n",VW[0][1]);
-    //printf("Diff de pred x: %f\n", ball.x()-predictedBall.x);
-    //printf("Diff de pred y: %f\n", ball.y()-predictedBall.y);
-
-    girarHorario(50,1);
-    girarHorario(50,2);
-
-    //No final todas as velocidades devem estar definidas e apenas a última definição será considerada
-    //Convertendo as velocidades
-    cinematica_azul();
-}
-
 void Strategy::andarFrente(double vel, int id)
 {
     double Vaux = vel/vrMax;
@@ -311,13 +287,46 @@ void Strategy::cinematica_amarelo()
     //TODO
 }
 
-void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
-                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
+Strategy::~Strategy()
 {
-    //TODO
+
 }
 
-Strategy::~Strategy()
+//Alterações Petersson
+//Função de saturação dos valores a serem enviados aos vaipara
+void Strategy::saturacao(double V[]){
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (V[0] > lim_x)
+        V[0] = lim_x;
+
+    if (V[0] < -lim_x)
+        V[0] = -lim_x;
+
+    if (V[1] > lim_y)
+        V[1] = lim_y;
+
+    if (V[1] < -lim_y)
+        V[1] = -lim_y;
+}
+
+void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
+                   fira_message::Robot b2, fira_message::Ball ball, const fira_message::Field & field)
+{
+    double destino[2] = {ball.x(),ball.y()};
+
+    saturacao(destino);
+
+    vaiParaDinamico(b0,destino[0],destino[1],0);
+
+    cinematica_azul();
+}
+
+void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
+                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
 {
 
 }
