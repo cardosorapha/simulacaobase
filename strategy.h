@@ -25,6 +25,26 @@ struct ballPredPos
     double y;
 };
 
+class Team : public std::array<fira_message::Robot, 3>
+{
+public:
+
+
+    // the constructors
+    Team() {}
+    Team(fira_message::Robot rb0, fira_message::Robot rb1, fira_message::Robot rb2)
+    {
+        (*this)[0] = rb0;
+        (*this)[1] = rb1;
+        (*this)[2] = rb2;
+    }
+
+    //Destructors
+    ~Team(){}
+
+
+};
+
 class Strategy {
   public:
 
@@ -44,9 +64,9 @@ class Strategy {
                        fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
                       ,fira_message::Ball ball, const fira_message::Field & field);
 
-    //Sobrecarga de Método
-    void strategy_blue(vector<fira_message::Robot> b, vector<fira_message::Robot> y
-                      ,fira_message::Ball ball, const fira_message::Field & field);
+    //Sobrecarga de "strategy_blue"
+    void strategy_blue(Team blue, Team Yellow, fira_message::Ball ball, const fira_message::Field & field);
+
 
     void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                          fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
