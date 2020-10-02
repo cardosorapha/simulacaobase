@@ -322,29 +322,6 @@ double Strategy::limita_velocidade(double valor, double sat)
       return(valor);
 }
 
-//Calcula o esforço para girar o robô em direção a um determinado ponto
-double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
-{
-    //Precisa saber se olha de frente ou de costas
-    //Ângulos são em radianos
-    double err_x = x - robot.x();
-    double err_y = y - robot.y();
-    double theta = 0;
-    double dtheta_frente = 0;
-    double dtheta_costas = 0;
-    double dtheta = 0;
-    double W = 0;
-
-    theta = atan2(err_y,err_x); //Ângulo desejado
-
-    dtheta_frente = theta-robot.orientation();
-    dtheta_costas = theta-(robot.orientation()+M_PI);
-    dtheta = (dtheta_frente<dtheta_costas)?(dtheta_frente):(dtheta_costas); //O menor é o executado, não tá muito certo
-
-    W = Wmax*tanh(0.03*dtheta);
-    return W;
-}
-
 Strategy::~Strategy()
 {
 
@@ -951,3 +928,26 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
    // }
 }
 
+
+//Calcula o esforço para girar o robô em direção a um determinado ponto
+double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
+{
+    //Precisa saber se olha de frente ou de costas
+    //Ângulos são em radianos
+    double err_x = x - robot.x();
+    double err_y = y - robot.y();
+    double theta = 0;
+    double dtheta_frente = 0;
+    double dtheta_costas = 0;
+    double dtheta = 0;
+    double W = 0;
+
+    theta = atan2(err_y,err_x); //Ângulo desejado
+
+    dtheta_frente = theta-robot.orientation();
+    dtheta_costas = theta-(robot.orientation()+M_PI);
+    dtheta = (dtheta_frente<dtheta_costas)?(dtheta_frente):(dtheta_costas); //O menor é o executado, não tá muito certo
+
+    W = Wmax*tanh(0.03*dtheta);
+    return W;
+}
