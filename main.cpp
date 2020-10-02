@@ -79,12 +79,12 @@ int main(int argc, char *argv[]){
                 for(int i = 0;i < estrategia.qtdRobos;i++)
                     grSim_client.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],i);
                 //Debug
-                               //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
-                               //printf("W:%f\n",b2.vorientation());
-                               //printf("Venviado:%f\n",estrategia.VW[2][0]);
-                               //printf("Wenviado:%f\n",estrategia.VW[2][1]);
-                               //printf("VR:%f\n",estrategia.vRL[2][0]);
-                               //printf("VL:%f\n",estrategia.vRL[2][1]);
+               //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
+               //printf("W:%f\n",b2.vorientation());
+               //printf("Venviado:%f\n",estrategia.VW[2][0]);
+               //printf("Wenviado:%f\n",estrategia.VW[2][1]);
+               //printf("VR:%f\n",estrategia.vRL[2][0]);
+               //printf("VL:%f\n",estrategia.vRL[2][1]);
             }
         }
     }
