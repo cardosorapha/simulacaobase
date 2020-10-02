@@ -42,8 +42,9 @@ class Strategy {
     int qtdRobos, vrMax;
     double Vmax, Wmax;
 
-    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,
-                       fira_message::Robot b2, fira_message::Ball ball, const fira_message::Field & field);
+    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                       fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
+                      ,fira_message::Ball ball, const fira_message::Field & field);
 
     void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                          fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
@@ -55,7 +56,7 @@ class Strategy {
     void vaiPara(fira_message::Robot,double,double,int);
 
     void vaiParaDinamico(fira_message::Robot,double,double,int);
-
+    void vaiParaDinamico2(fira_message::Robot,double,double,int);
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
 
@@ -68,9 +69,22 @@ class Strategy {
     void converte_vetor(double V[],double);
     double filtro(double V,int);
     void vaiPara_desviando(fira_message::Robot,double,double,int);
-    void goleiro(fira_message::Robot,fira_message::Ball,int);
-    double irponto_angular(fira_message::Robot robot, double x, double y);
-private:
+    void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                                     fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                                     double px, double py,int id);
+    bool robo_parede(fira_message::Robot);
+    void vaiPara2(fira_message::Robot,double,double,int);
+    void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
+    void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
+
+    vector<double> inserirRRT(vector<double>,vector<double>,int);
+    void goleiro(fira_message::Robot, double, double,int);
+    void goleiro_petersson(fira_message::Robot, double, double,int);
+    void goleiro2(fira_message::Robot,fira_message::Ball,int);
+    void chute(int);
+    void zagueiro(fira_message::Robot, double, double,int);
+    void zagueiro2(fira_message::Robot, double, double, int);
+  private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
     void cinematica_azul(); //transforma V e W em Vr e Vl do time azul
