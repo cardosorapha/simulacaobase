@@ -7,6 +7,10 @@ Strategy::Strategy()
 
     vector<double> aux{0,0};
 
+    for(int i = 0; i < 5 ; i++){
+       velocidades[i] = 0;
+    }
+
     qtdRobos = 3;
     vrMax = 125;
 
@@ -33,7 +37,7 @@ Strategy::Strategy()
     predictedBall = temp;
 
     //Inicialização dos vetores de memória PID
-    int N_mem = 10;
+    int N_mem = 5;
 
     for(int i=0; i < N_mem; i++)
     {
@@ -154,6 +158,7 @@ void Strategy::cinematica_azul()
         vRL[i][1] = limita_velocidade(vRL[i][1],vrMax);
     }
 }
+
 void Strategy::andarFrente(double vel, int id)
 {
     double Vaux = vel/vrMax;
@@ -275,6 +280,10 @@ double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
     double  ang_grande = 30; //para ângulos maiores que esse valor o sistema da prioridade ao W, reduzindo o V
     double  dist = distancia(rb, px, py);
 
+    if (dist < 0.3){
+        dist = 0.3;
+    }
+
     ang_err angulo = olhar(rb, px, py);
 
     Vaux = V_max*tanh(k_lin*dist*angulo.flag);  //controle não linear de V
@@ -380,6 +389,165 @@ void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
     VW[id][1] = controleAngular(angulo.fi);
 }
 
+//Alterações Petersson
+//Função de saturação dos valores a serem enviados aos vaipara
+void Strategy::saturacao(double V[]){
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (V[0] > lim_x)
+        V[0] = lim_x;
+
+    if (V[0] < -lim_x)
+        V[0] = -lim_x;
+
+    if (V[1] > lim_y)
+        V[1] = lim_y;
+
+    if (V[1] < -lim_y)
+        V[1] = -lim_y;
+}
+
+//Atualiza a estrutura de dados contendo as posições de todos os robôs
+void Strategy::atualiza_pos(fira_message::Robot b0,fira_message::Robot b1,fira_message::Robot b2,fira_message::Robot y0,fira_message::Robot y1,fira_message::Robot y2){
+    Strategy::pos_robos[0][0] = b0.x();
+    Strategy::pos_robos[0][1] = b0.y();
+    Strategy::pos_robos[1][0] = b1.x();
+    Strategy::pos_robos[1][1] = b1.y();
+    Strategy::pos_robos[2][0] = b2.x();
+    Strategy::pos_robos[2][1] = b2.y();
+
+    Strategy::pos_robos[3][0] = y0.x();
+    Strategy::pos_robos[3][1] = y0.y();
+    Strategy::pos_robos[4][0] = y1.x();
+    Strategy::pos_robos[4][1] = y1.y();
+    Strategy::pos_robos[5][0] = y2.x();
+    Strategy::pos_robos[5][1] = y2.y();
+
+}
+
+
+//Campo repulsivo linear
+void Strategy::calc_repulsao(fira_message::Robot rb, double F[]){
+     double raio_adversario = 0.2;  //raio de detecção do adversario
+
+     F[0] = 0;
+     F[1] = 0;
+
+     double dist_adversario;
+
+     for(int i = 0 ; i < 5 ; i++){
+
+         dist_adversario = sqrt(pow((rb.x() - pos_robos[i][0]),2) + pow((rb.y() - pos_robos[i][1]),2));
+
+         if (dist_adversario <= raio_adversario && dist_adversario > 0.01){
+             double dist_x = rb.x() - pos_robos[i][0];
+             double dist_y = rb.y() - pos_robos[i][1];
+
+             F[0] += raio_adversario*dist_x/dist_adversario - dist_x;
+             F[1] += raio_adversario*dist_y/dist_adversario - dist_y;
+         }
+
+     }
+}
+
+//limita o valor de um vetor
+void Strategy::converte_vetor(double V[],double raio){
+
+    double dist = sqrt(pow(V[0],2) + pow(V[1],2));
+
+    if (dist > raio){
+        V[0] = raio*V[0]/dist;
+        V[1] = raio*V[1]/dist;
+    }
+
+}
+
+double Strategy::filtro(double V,int id){
+
+    //filtro IIR
+    double k = 0.9;
+
+    V = velocidades[id]*(1-k) + V*k;
+    velocidades[id] = V;
+
+    return V;
+}
+
+void Strategy::goleiro_petersson(fira_message::Robot rb,fira_message::Ball ball, int id){
+
+    double gol_top = 0.2;
+    double campo_y = 0.7;
+    double gol_x = 0.7;
+    double lim_x = 0.03;
+    double lim_ang = 2;
+
+    vector <double> new_pos = {0,0};
+
+    double dist = distancia(rb,ball.x(),ball.y());
+
+    //se a bola estiver l
+    if ( dist > 0.3){
+        new_pos = {predictedBall.x,predictedBall.y};
+    }else{
+        new_pos = {ball.x(),ball.y()};
+    }
+
+    vector<double> destino ={-gol_x,0};
+
+    //envia goleiro para o meio do gol antes de tudo
+    if (rb.x() > -gol_x + lim_x || rb.x() < -gol_x - lim_x){
+        vaiPara_desviando(rb,destino[0],destino[1],id);
+        printf("indo centro\n");
+    }else{
+        //corrige a orientação do robô para olhar para o topo do campo
+        ang_err angulo = olhar(rb,rb.x(),campo_y);
+        printf("olhando\n");
+        if (angulo.fi > lim_ang || angulo.fi <-lim_ang){
+            VW[id][1] = irponto_angular(rb,rb.x(),campo_y);
+        }else{
+            printf("seguindo bola\n");
+            //limita os valores superiores e inferiores que o goleiro pode ir
+            if(new_pos[1] > gol_top){
+                new_pos[1] = gol_top;
+            }
+
+            if(new_pos[1] < -gol_top){
+                new_pos[1] = -gol_top;
+            }
+            //se a bola estiver acima faz o robô subir, se estiver abaixo faz ele descer
+            if(new_pos[1] > rb.y()){
+               andarFundo(125,id);
+            }
+
+            if(new_pos[1] < rb.y()){
+               andarFrente(125,id);
+            }
+
+        }
+    }
+}
+
+void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int id){
+
+    double V[2] = {px - rb.x(),py - rb.y()};
+
+    double F[2] = {0,0};
+
+    calc_repulsao(rb,F);
+  
+    double new_pos[2] = {rb.x() + ka*V[0] + kr*F[0],rb.y() + ka*V[1] + kr*F[1]};
+
+    Strategy::saturacao(new_pos);
+
+    vaiParaDinamico(rb,new_pos[0],new_pos[1],id);
+
+    filtro(VW[id][0],id);
+}
+
+
 //Verifica se o robo precisa se afastar de outros robos para evitar travamentos
 void Strategy::sai_robo(fira_message::Robot rb,fira_message::Robot ry,double F[]){
 
@@ -408,45 +576,6 @@ void Strategy::sai_robo2(fira_message::Robot rb,fira_message::Robot ry,double F[
      }
 }
 
-//limita o valor de um vetor
-void Strategy::converte_vetor(double V[],double raio){
-
-    double dist = sqrt(pow(V[0],2) + pow(V[1],2));
-
-    if (dist > raio){
-        V[0] = raio*V[0]/dist;
-        V[1] = raio*V[1]/dist;
-    }
-
-}
-
-double Strategy::filtro(double V){
-/*
-    //Media móvel
-    static vector<double> V_vector = {0,0,0,0,0};
-    double sum = 0;
-
-    V_vector.erase(V_vector.begin());
-    V_vector.push_back(V);
-
-    for (int i = 0;i < (int)V_vector.size() ; i++){
-        sum = sum + V_vector[i];
-    }
-
-    V = sum/V_vector.size();
-
-*/
-
-    //filtro IIR
-    static double V_antigo = 0;
-    double k = 0.5;
-
-    V = V_antigo*(1-k) + V*k;
-    V_antigo = V;
-
-
-    return V;
-}
 
 vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int opcao){
     //Se a opção for zero concatena os vetores, senao apaga tudo e insere o novo vetor no lugar
@@ -457,36 +586,6 @@ vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int
         V_out.insert(V_out.end(),V_in.begin(),V_in.end());
     }
     return V_out;
-}
-
-void Strategy::vaiPara_desviando(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
-                                 fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
-                                 vector <double> destino,int id){
-
-    double V[2] = {destino[0] - b0.x(),destino[1] - b0.y()};
-
-    double F[2] = {0,0};
-
-    sai_robo2(b0,y0,F);
-    sai_robo2(b0,y1,F);
-    sai_robo2(b0,y2,F);
-
-    sai_robo2(b0,b1,F);
-    sai_robo2(b0,b2,F);
-
-    converte_vetor(V,0.1);
-    converte_vetor(F,0.2);
-
-    double ka = 1;
-    double kr = 1;
-
-    //aplicação do campo potencial para redefinir a nova posição que o robo deve ir desviando dos obstáculos
-    //posição do robo + constante de atração ka * atração do destino V + constante de repulsao kr * repulsao dos outros robos F
-    double new_pos[2] = {b0.x() + ka*V[0] + kr*F[0],b0.y() + ka*V[1] + kr*F[1]};
-
-    vaiParaDinamico2(b0,new_pos[0],new_pos[1],id);
-
-    VW[id][0] = filtro(VW[id][0]);
 }
 
 
@@ -838,6 +937,5 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
    // if((distancia(rb,xbola,ybola) < 0.08) && (xbola > rb.x())){
    //     chute(id);
    // }
-
-
 }
+

@@ -59,6 +59,16 @@ class Strategy {
     void vaiParaDinamico2(fira_message::Robot,double,double,int);
     double controleAngular(double);
     double controleLinear(fira_message::Robot,double,double);
+
+    //Alterações Petersson
+    double pos_robos[6][2];
+    double velocidades[6];
+    void saturacao(double V[]);
+    void atualiza_pos(fira_message::Robot b0,fira_message::Robot b1,fira_message::Robot b2,fira_message::Robot y0,fira_message::Robot y1,fira_message::Robot y2);
+    void calc_repulsao(fira_message::Robot rb, double F[]);
+    void converte_vetor(double V[],double);
+    double filtro(double V,int);
+    void vaiPara_desviando(fira_message::Robot,double,double,int);
     void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                      fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                      double px, double py,int id);
@@ -66,16 +76,12 @@ class Strategy {
     void vaiPara2(fira_message::Robot,double,double,int);
     void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
     void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
-    void converte_vetor(double V[],double);
-    double filtro(double V);
 
     vector<double> inserirRRT(vector<double>,vector<double>,int);
     void goleiro(fira_message::Robot, double, double,int);
+    void goleiro_petersson(fira_message::Robot, double, double,int);
     void goleiro2(fira_message::Robot,fira_message::Ball,int);
     void chute(int);
-    void vaiPara_desviando(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
-                           fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
-                           vector <double> destino,int id);
     void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro2(fira_message::Robot, double, double, int);
   private:
@@ -92,6 +98,7 @@ class Strategy {
     ang_err olhar(fira_message::Robot, double, double);
     double distancia(fira_message::Robot,double,double);
     double limita_velocidade(double, double);
+
 };
 
 #endif // STRATEGY_H
