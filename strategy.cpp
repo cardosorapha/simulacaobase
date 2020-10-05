@@ -131,6 +131,52 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
 
 }
 
+void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, const fira_message::Field &field)
+{
+
+    vector <double> destino = {ball.x(),ball.y()};
+
+    //Obstáculos
+    vector<State> obs;
+    for(int i = 0;i<3;i++)
+    {
+        if(index_rrt!=i)
+            obs.push_back(State(blue[i].x(),blue[i].y()));
+
+        obs.push_back(State(yellow[i].x(),yellow[i].y()));
+    }
+
+    RRT(blue[index_rrt],destino,obs);
+
+    State new_ = *(rrt->GetOptimaNodes().end()-1);
+     vaiPara(blue[index_rrt],new_.x,new_.y,0);
+    /*double Xbola;
+    double Ybola;
+
+    if (distancia(blue[2], ball.x(), ball.y()) > 0.5){
+
+        Xbola = predictedBall.x;
+        Ybola = predictedBall.y;
+
+    }else{
+
+        Xbola = ball.x();
+        Ybola = ball.y();
+    }
+
+    goleiro(blue[0],ball.x(), ball.y(),0);
+
+    zagueiro2(blue[1],ball.x(), ball.y(),1);
+
+    if(7 == 7){
+       vaiPara_hotwheels(blue[0], blue[1], blue[2], yellow[0], yellow[1], yellow[2], Xbola,Ybola,2);
+    }*/
+
+    cinematica_azul();
+
+
+}
+
 void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                      fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
 {
@@ -327,11 +373,136 @@ double Strategy::distancia(fira_message::Robot rb, double px, double py)
       return(dist);
 }
 
+double Strategy::distancia(State a, State b)
+{
+    double dist = sqrt( pow((a.x-b.x),2) + pow((a.y-b.y),2) );
+    return(dist);
+}
+
 double Strategy::limita_velocidade(double valor, double sat)
 {
       if (valor > sat) {valor = sat;}
       if (valor < -sat) {valor = -sat;}
       return(valor);
+}
+
+void Strategy::RRT(State init, State goal, vector<State> obs_centers, bool flag)
+{
+
+    double raio = 0.4;
+
+    double angle = atan2(init.x - goal.x,init.y - goal.y);
+
+    double dist = sqrt(pow(goal.x-init.x,2.0)+pow(goal.y-init.y,2.0));
+    State GoalFrontier;
+    if(dist < raio)
+         GoalFrontier = goal;
+    else
+    {
+        GoalFrontier = State(init.x -  raio*sin(angle),init.y -  raio*cos(angle));
+    }
+
+
+    delete rrt;
+    rrt = new rrt_graph(init,GoalFrontier);
+
+    //Loop
+    int k = 1;
+    for (k = 1;k<400;k++)
+    {
+        //cout << k << endl;
+       // cout << rrt->GetNumNodes() << endl;
+
+        //Sorteia um Ponto aleatório
+        State x_rand;
+        if(!chave)
+            x_rand = rrt->random_state(init,GoalFrontier,0.7,raio);
+        else
+            x_rand = rrt->random_state(init,GoalFrontier,0.5,0.4,raio,waypopints);
+
+        rrt->Extend_SH(x_rand,obs_centers,0.07,raio);
+
+        if(distancia(rrt->x_new, GoalFrontier)<0.02)
+        {
+            //Essa etapa pode ser retirada, mas parace ajudar contra dos deadLocks
+            rrt->x_new = GoalFrontier;
+            //Adiciona vértice à arvore
+            rrt->add_vertice(rrt->x_new);
+            //Adiciona Aresta
+            rrt->add_aresta((rrt->GetNumNodes()-2),(rrt->GetNumNodes()-1));
+        }
+
+        if(rrt->x_new == GoalFrontier)
+            break;
+    }
+    rrt->smooth_path(obs_centers,0.07);
+    chave = true;
+    delete waypopints;
+    waypopints = new vector<State>();
+    for(int i = rrt->GetNumNodes(); i > (rrt->GetNumNodes()/2);i--)
+        waypopints->push_back(rrt->GetNodeState(i));
+
+}
+
+void Strategy::RRT(fira_message::Robot rb, vector<double> _goal, vector<State> obs_centers, bool flag)
+{
+    double raio = 0.4;
+
+    State init = State(rb.x(),rb.y());
+    State goal = State(_goal[0],_goal[1]);
+
+
+    double angle = atan2(init.x - goal.x,init.y - goal.y);
+
+    double dist = sqrt(pow(goal.x-init.x,2.0)+pow(goal.y-init.y,2.0));
+    State GoalFrontier;
+    if(dist < raio)
+         GoalFrontier = goal;
+    else
+    {
+        GoalFrontier = State(init.x -  raio*sin(angle),init.y -  raio*cos(angle));
+    }
+
+
+    delete rrt;
+    rrt = new rrt_graph(init,GoalFrontier);
+
+    //Loop
+    int k = 1;
+    for (k = 1;k<400;k++)
+    {
+        //cout << k << endl;
+       // cout << rrt->GetNumNodes() << endl;
+
+        //Sorteia um Ponto aleatório
+        State x_rand;
+        if(!chave)
+            x_rand = rrt->random_state(init,GoalFrontier,0.7,raio);
+        else
+            x_rand = rrt->random_state(init,GoalFrontier,0.5,0.4,raio,waypopints);
+
+        rrt->Extend_SH(x_rand,obs_centers,0.07,raio);
+
+        if(distancia(rrt->x_new, GoalFrontier)<0.02)
+        {
+            //Essa etapa pode ser retirada, mas parace ajudar contra dos deadLocks
+            rrt->x_new = GoalFrontier;
+            //Adiciona vértice à arvore
+            rrt->add_vertice(rrt->x_new);
+            //Adiciona Aresta
+            rrt->add_aresta((rrt->GetNumNodes()-2),(rrt->GetNumNodes()-1));
+        }
+
+        if(rrt->x_new == GoalFrontier)
+            break;
+    }
+    rrt->smooth_path(obs_centers,0.07);
+    chave = true;
+    delete waypopints;
+    waypopints = new vector<State>();
+    for(int i = rrt->GetNumNodes(); i > (rrt->GetNumNodes()/2);i--)
+        waypopints->push_back(rrt->GetNodeState(i));
+
 }
 
 Strategy::~Strategy()
@@ -583,7 +754,7 @@ void Strategy::goleiro2(fira_message::Robot rb,fira_message::Ball ball, int id){
     }else{
         ang_err angulo = olhar(rb,rb.x(),gol_top);
         if (angulo.fi > lim_ang || angulo.fi <-lim_ang){
-            VW[id][1] = irponto_angular(rb,rb.x(),campo_y);
+            //VW[id][1] = irponto_angular(rb,rb.x(),campo_y);
             printf("ajustando angulo\n");
         }else{
             if (ball.y() < gol_top && ball.y() >-gol_top){

@@ -61,9 +61,6 @@ private:
     int numNodes;
     State Goal;
 
-    clock_t start, end;
-
-
     //Métodos auxiliares
     static bool sortbyfirst(const pair<int,double> &a, const pair<int,double> &b)
     {
@@ -122,6 +119,10 @@ public:
     {
         return nodes[index_node];
     }
+    vector<State> GetOptimaNodes() const
+    {
+        return optimal_nodes;
+    }
     vector<double> GetNodeVecDir(int index_node) const
     {
         float x = cos(GetNodeState(index_node).theta);
@@ -165,6 +166,25 @@ public:
 
         return aux;
     }
+    //Sobrecarda de 'random_state' - RRT-Goalbias e Horizonte amostral
+    State random_state(State init, State goal, double epislon, double raio)
+    {
+
+        double randy = static_cast <double> (2*raio*(rand())/(static_cast <double> (RAND_MAX)) - raio);
+        double randx;
+        if(goal.x < init.x)
+            randx = static_cast <double> (raio*(rand())/(static_cast <double> (RAND_MAX)) - raio);
+        else
+            randx = static_cast <double> (raio*(rand())/(static_cast <double> (RAND_MAX)));
+
+        State aux;
+        if(((float)rand()/RAND_MAX) < epislon)
+            aux = State(init.x + randx, init.y + randy);
+        else
+            aux = goal;
+
+        return aux;
+    }
     //Sobrecarda de 'random_state' - ERRT
     State random_state(double width, double height, State goal, vector<State> waypointCahe ,float epislon,float delta)
     {
@@ -182,27 +202,32 @@ public:
                                static_cast <double> (rand())/(static_cast <double> (RAND_MAX/height)));
         return aux;
     }
-    // 'random_state_orientation' - ERRT - Sobrecarga de Método criado para incluir a orientação na busca
-    State random_state_orientation(double width, double height, State goal, vector<State> waypointCahe ,float epislon,float delta)
-    {
-        float p = (float)rand()/RAND_MAX;
-        int i = rand() % waypointCahe.size();
 
-        State estado;
+    //Sobrecarda de 'random_state' - ERRT e Horizonte amostral
+    State random_state(State init, State goal,double epislon,double delta,double raio, vector<State> *waypointCahe = NULL )
+    {
+        double randy = static_cast <double> (2*raio*(rand())/(static_cast <double> (RAND_MAX)) - raio);
+        double randx;
+        if(goal.x < init.x)
+            randx = static_cast <double> (raio*(rand())/(static_cast <double> (RAND_MAX)) - raio);
+        else
+            randx = static_cast <double> (raio*(rand())/(static_cast <double> (RAND_MAX)));
+
+        float p = (float)rand()/RAND_MAX;
+        int i = rand() % waypointCahe->size();
+
+        State aux;
 
         if((0 < p) &&(p < epislon))
             return goal;
         else if((epislon < p)&&(p < epislon + delta))
-            return waypointCahe[i];
+            return (*waypointCahe)[i];
         else if((epislon + delta < p)&&(p < 1))
-        {
-             estado = State(static_cast <double> (rand())/(static_cast <double> (RAND_MAX/width)),
-                            static_cast <double> (rand())/(static_cast <double> (RAND_MAX/height)),
-                            static_cast <double> (rand())/(static_cast <double> (RAND_MAX/(2*M_PI)))); //Escolhe um stado aleatório
-        }
+            return aux = State(init.x + randx, init.y + randy);
 
-        return estado;
+        return aux;
     }
+
 
     //Método 'nearest_neighbor' retorna o id do nó mas próximo do ponto 'x_rand'
     int nearest_neighbor(State x_rand)
@@ -229,38 +254,7 @@ public:
         return nearest_node;
     }
 
-    // 'nearest_neighbor_orientation' retorna o id do nó mas próximo do ponto 'x_rand' - Método criado para incluir a orientação na busca
-    int nearest_neighbor_orientation(State x_rand)
-    {
-        float norm = sqrt((x_rand.x*x_rand.x)
-                            +(x_rand.y*x_rand.y));
 
-        float x = cos(x_rand.theta)*norm;
-        float y = sin(x_rand.theta)*norm;
-
-        double min_dist = 99999.9;
-        int nearest_node = 0;
-        for (int node = 0; node < GetNumNodes() ; node++)
-        {
-            double sum = 0.0, dist;
-
-            sum = pow(GetNodeState(node).x - x_rand.x, 2.0)
-                    + pow(GetNodeState(node).y - x_rand.y, 2.0)
-                        +pow(GetNodeVecDir(node)[0] - x, 2.0)
-                            +pow(GetNodeVecDir(node)[1] - y, 2.0);
-
-            dist = sqrt(sum);
-
-            if (dist < min_dist)
-            {
-                min_dist = dist;
-                nearest_node = node;
-            }
-
-        }
-
-        return nearest_node;
-    }
 
     //Método 'move' determina como a arvore vai expandir - Função de transição de Estado
     State move(State source, State target)
@@ -286,21 +280,21 @@ public:
         if((0.0 < delta.x)&&(delta.x < 0.3535))
             delta.x = 0;
         else if((0.3535 < delta.x)&&(delta.x < 1))
-            delta.x = 6;
+            delta.x = 0.03;
         else if((-0.3535 < delta.x)&&(delta.x < 0))
             delta.x = 0;
         else if((-1 < delta.x)&&(delta.x < -0.3535))
-            delta.x = -6;
+            delta.x = -0.03;
 
         //Movimento na direção Y
         if((0.0 < delta.y)&&(delta.y < 0.3535))
             delta.y = 0;
         else if((0.3535 < delta.y)&&(delta.y < 1))
-            delta.y = 6;
+            delta.y = 0.03;
         else if((-0.3535 < delta.y)&&(delta.y < 0))
             delta.y = 0;
         else if((-1 < delta.y)&&(delta.y < -0.3535))
-            delta.y = -6;
+            delta.y = -0.03;
 
         //cout <<"delta depois: " << delta << endl;
 
@@ -308,66 +302,18 @@ public:
         return delta;
 
     }
-    //Sobrecarga para 'move' determina como a arvore vai expandir - Método criado para incluir a orientação na busca
-    State move_orientation(State source, State target)
-    {
-        //Encontrar ângulo
-        target.x =  target.x-source.x;
-        target.y =  target.x-source.y;
-        double angle = atan2(target.x,target.y);
-        if(angle < 0)
-            angle = angle + 2*M_PI;
 
-       // cout << angle << endl;
-
-        State delta;
-
-        delta.x = sin(angle);
-        delta.y = cos(angle);
-
-       // cout <<"delta antes: " << delta << endl;
-
-
-        //Movimento na direção X
-        if((0.0 < delta.x)&&(delta.x < 0.3535))
-            delta.x = 0;
-        else if((0.3535 < delta.x)&&(delta.x < 1))
-            delta.x = 6;
-        else if((-0.3535 < delta.x)&&(delta.x < 0))
-            delta.x = 0;
-        else if((-1 < delta.x)&&(delta.x < -0.3535))
-            delta.x = -6;
-
-        //Movimento na direção Y
-        if((0.0 < delta.y)&&(delta.y < 0.3535))
-            delta.y = 0;
-        else if((0.3535 < delta.y)&&(delta.y < 1))
-            delta.y = 6;
-        else if((-0.3535 < delta.y)&&(delta.y < 0))
-            delta.y = 0;
-        else if((-1 < delta.y)&&(delta.y < -0.3535))
-            delta.y = -6;
-
-        //cout <<"delta depois: " << delta << endl;
-        delta.theta = target.theta;
-        return delta;
-
-    }
 
     //Método 'new_state' implementa o método 'move' para retornar o ponto x_new
     State new_state(State x_near, State x_rand)
     {
         return State(x_near.x + move(x_near, x_rand).x, x_near.y + move(x_near, x_rand).y);
     }
-    //'new_state_orientation' implementa o método 'move' para retornar o ponto x_new - Método criado para incluir a orientação na busca
-    State new_state_orientation(State x_near, State x_rand)
-    {
-        return State(x_near.x + move_orientation(x_near, x_rand).x, x_near.y + move_orientation(x_near, x_rand).y,move_orientation(x_near, x_rand).theta);
-    }
+
 
     //Método 'Extend' - Testa a expansão da RRT for RRT-CONNECT
     State x_new;
-    int Extend(State x_rand, vector<State> center_obs, int raio)
+    int Extend(State x_rand, vector<State> center_obs, double raio)
     {
         int nearest_node = nearest_neighbor(x_rand);
         State x_near = GetNodeState(nearest_node);
@@ -402,8 +348,48 @@ public:
          }
         return Trapped;
     }
+    //Método 'Extend_SH' - Testa a expansão da RRT para RRT com Horizonte amostral
+    int Extend_SH(State x_rand, vector<State> center_obs, double raio_obs, double raio = 0.04)
+    {
+
+        int nearest_node = nearest_neighbor(x_rand);
+        State x_near = GetNodeState(nearest_node);
+
+        x_new = new_state(x_near,x_rand);
+
+        double dist = sqrt(pow(x_new.x - nodes.begin()->x,2.0)+pow(x_new.y - nodes.begin()->y,2.0));
+
+        if(obs_detect(x_new,center_obs,raio_obs))
+         {
+             //Verifica se x_new já é um nó do grafo
+              bool existis_node = false;
+              for (int i = 0;i < GetNumNodes();i++)
+              {
+                 if(x_new == GetNodeState(i))
+                  {
+                        existis_node = true;
+                        return Reached;
+
+                  }
+               }
+               if(existis_node == false && dist < raio)
+               {
+                  //Adiciona vértice à arvore
+                  add_vertice(x_new);
+                  //Adiciona Aresta
+                  add_aresta(nearest_node,(GetNumNodes()-1));
+
+                  return Advanced;
+                }
+
+         }
+
+        return Trapped;
+
+
+    }
     //Método 'Connect' - Testa a expansão da RRT for RRT-CONNECT
-    int Connect(State x_rand, vector<State> center_obs, int raio)
+    int Connect(State x_rand, vector<State> center_obs, double raio)
     {
         int S;
         do
@@ -470,8 +456,8 @@ public:
 
         State _init = GetNodeState(0);
         optimal_nodes.push_back(_init);
-        _init = connect_test(_init,x_new,center_obs,raio);
-        if(_init==x_new)
+        _init = connect_test(_init,Goal,center_obs,raio);
+        if(_init==Goal)
             optimal_nodes.push_back(_init);
 
         vector<pair<int,double>> pesos_copy;
@@ -488,7 +474,7 @@ public:
             {
                 _init = aux;
                 optimal_nodes.push_back(_init);
-                if(_init == nodes[pesos_copy.begin()->first])
+                if(_init == Goal)
                     break;
 
 
@@ -503,13 +489,13 @@ public:
     }
 
     //Método 'obs_detect' retorna um booleano 'true' se o estado estiver contido no c_cobs - Mapa "aberto"
-    bool obs_detect(State current, vector<State> center_obs, int raio/*alcane*/)
+    bool obs_detect(State current, vector<State> center_obs, double raio/*alcane*/)
     {
         for(int i = 0;i < (int)center_obs.size();i++)
         {
             double dist = sqrt(pow(current.x-center_obs[i].x,2.0)
                                 +  pow(current.y-center_obs[i].y,2.0));
-            if(dist <= raio+4)
+            if(dist <= raio)
                 return false;
 
         }
