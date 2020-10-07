@@ -101,35 +101,14 @@ void Strategy::predict_ball(fira_message::Ball ball)
 }
 
 void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
-                             fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
     vector <double> destino = {ball.x(),ball.y()};
 
-
-    //vaiPara2(b0,predictedBall.x,predictedBall.y,0);
-    double Xbola;
-    double Ybola;
-
-    if (distancia(b2, ball.x(), ball.y()) > 0.5){
-
-        Xbola = predictedBall.x;
-        Ybola = predictedBall.y;
-
-    }else{
-
-        Xbola = ball.x();
-        Ybola = ball.y();
-    }
-
-    goleiro(b0,ball.x(), ball.y(),0);
-
-    zagueiro2(b1,ball.x(), ball.y(),1);
-
-    if(7 == 7){
-       vaiPara_hotwheels(b0, b1, b2, y0, y1, y2, Xbola,Ybola,2);
-    }
+    goleiro(b0,destino[0],destino[1],0);
+    zagueiro(b1,destino[0],destino[1],1);
+    vaiPara_desviando(b2,destino[0],destino[1],2);
 
     cinematica_azul();
 
@@ -347,7 +326,7 @@ Strategy::~Strategy()
 {
 
 }
-
+/* Desnecessário
 //Verifica se o robô está perto da parede
 bool Strategy::robo_parede(fira_message::Robot rb){
     //limites de x e y
@@ -388,6 +367,7 @@ void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
     ang_err angulo = olhar(rb, px, py);
     VW[id][1] = controleAngular(angulo.fi);
 }
+*/
 
 //Alterações Petersson
 //Função de saturação dos valores a serem enviados aos vaipara
@@ -537,7 +517,13 @@ void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int 
     double F[2] = {0,0};
 
     calc_repulsao(rb,F);
-  
+
+    double ka = 1;
+    double kr = 1;
+
+    converte_vetor(V,0.1);
+    converte_vetor(F,0.2);
+
     double new_pos[2] = {rb.x() + ka*V[0] + kr*F[0],rb.y() + ka*V[1] + kr*F[1]};
 
     Strategy::saturacao(new_pos);
@@ -547,7 +533,7 @@ void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int 
     filtro(VW[id][0],id);
 }
 
-
+/* Desnecessario
 //Verifica se o robo precisa se afastar de outros robos para evitar travamentos
 void Strategy::sai_robo(fira_message::Robot rb,fira_message::Robot ry,double F[]){
 
@@ -575,7 +561,7 @@ void Strategy::sai_robo2(fira_message::Robot rb,fira_message::Robot ry,double F[
          F[1] += raio_adversario*dist_y/dist_adversario - dist_y;
      }
 }
-
+*/
 
 vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int opcao){
     //Se a opção for zero concatena os vetores, senao apaga tudo e insere o novo vetor no lugar
@@ -588,7 +574,7 @@ vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int
     return V_out;
 }
 
-
+/*Desnecessario
 void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, int id)
 {
     //limites de x e y
@@ -665,7 +651,7 @@ void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, in
 
     atualiza_memoria_azul(erro_linear,erro_angular);
 }
-
+*/
 //Goleiro de Petersson
 void Strategy::goleiro2(fira_message::Robot rb,fira_message::Ball ball, int id){
 
@@ -753,6 +739,7 @@ void Strategy::goleiro(fira_message::Robot rb,double xbola,double ybola,int id){
 void Strategy::chute(int id){
     VW[id][1] = -100;
 }
+/* Não funciona mais com as mudanças
 void Strategy::vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                  fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                  double px, double py,int id){
@@ -861,6 +848,8 @@ void Strategy::vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,
             }
         }
 }
+*/
+
 // Zagueiro David
 void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int id){
    double x_penalti =  0.4;
@@ -939,3 +928,26 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
    // }
 }
 
+
+//Calcula o esforço para girar o robô em direção a um determinado ponto
+double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
+{
+    //Precisa saber se olha de frente ou de costas
+    //Ângulos são em radianos
+    double err_x = x - robot.x();
+    double err_y = y - robot.y();
+    double theta = 0;
+    double dtheta_frente = 0;
+    double dtheta_costas = 0;
+    double dtheta = 0;
+    double W = 0;
+
+    theta = atan2(err_y,err_x); //Ângulo desejado
+
+    dtheta_frente = theta-robot.orientation();
+    dtheta_costas = theta-(robot.orientation()+M_PI);
+    dtheta = (dtheta_frente<dtheta_costas)?(dtheta_frente):(dtheta_costas); //O menor é o executado, não tá muito certo
+
+    W = Wmax*tanh(0.03*dtheta);
+    return W;
+}
