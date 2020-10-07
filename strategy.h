@@ -11,6 +11,9 @@
 #include "pb/packet.pb.h"
 #include "pb/replacement.pb.h"
 
+#include "GrafoRRT.h"
+
+
 struct ang_err
 {
     double fi;
@@ -26,6 +29,26 @@ struct ballPredPos
     double y;
 };
 
+class Team : public std::array<fira_message::Robot,3>
+{
+public:
+
+
+    // the constructors
+    Team() {}
+    Team(fira_message::Robot rb0, fira_message::Robot rb1, fira_message::Robot rb2)
+    {
+
+        (*this)[0] = rb0;
+        (*this)[1] = rb1;
+        (*this)[2] = rb2;
+
+    }
+
+    //Destructors
+    ~Team(){}
+
+};
 
 class Strategy {
   public:
@@ -39,12 +62,19 @@ class Strategy {
 
     vector<vector<double>> vRL, VW;
 
+    rrt_graph *rrt = NULL;
+    vector<State> *waypopints = NULL;
+    bool chave = false;
+    int index_rrt = 0;
+
     int qtdRobos, vrMax;
     double Vmax, Wmax;
 
     void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                        fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
                       ,fira_message::Ball ball, const fira_message::Field & field);
+
+    void strategy_blue(Team blue, Team yellow,fira_message::Ball ball, const fira_message::Field & field);
 
     void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                          fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
@@ -78,6 +108,8 @@ class Strategy {
     void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
 
     vector<double> inserirRRT(vector<double>,vector<double>,int);
+    vector<double> direcao_provavel(ballPredPos, fira_message::Ball);
+    void posicionamento(fira_message::Robot, int, bool);
     void goleiro(fira_message::Robot, double, double,int);
     void goleiro_petersson(fira_message::Robot, double, double,int);
     void goleiro2(fira_message::Robot,fira_message::Ball,int);
@@ -97,7 +129,13 @@ class Strategy {
 
     ang_err olhar(fira_message::Robot, double, double);
     double distancia(fira_message::Robot,double,double);
+    double distancia(State,State);
+
     double limita_velocidade(double, double);
+
+    void RRT(State init, State goal, vector<State> obs_centers,  bool flag = false);
+    void RRT(fira_message::Robot rb, vector<double> goal, vector<State> obs_centers,  bool flag = false);
+
 
 };
 
