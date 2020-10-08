@@ -138,22 +138,10 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
 void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, const fira_message::Field &field)
 {
     vector <double> destino = {ball.x(),ball.y()};
+    predict_ball(ball);
+    predict_vector = direcao_provavel(predictedBall,ball);
 
-    //Obstáculos
-    vector<State> obs;
-    for(int i = 0;i<3;i++)
-    {
-        if(index_rrt!=i)
-            obs.push_back(State(blue[i].x(),blue[i].y()));
-
-        obs.push_back(State(yellow[i].x(),yellow[i].y()));
-    }
-
-    RRT(blue[index_rrt],destino,obs);
-
-    State new_ = *(rrt->GetOptimaNodes().end()-1);
-     vaiPara(blue[index_rrt],new_.x,new_.y,0);
-    /*double Xbola;
+    double Xbola;
     double Ybola;
 
     if (distancia(blue[2], ball.x(), ball.y()) > 0.5){
@@ -169,11 +157,27 @@ void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, co
 
     goleiro(blue[0],ball.x(), ball.y(),0);
 
-    zagueiro2(blue[1],ball.x(), ball.y(),1);
+    zagueiro_cone(blue,yellow, ball,1);
 
     if(7 == 7){
        vaiPara_hotwheels(blue[0], blue[1], blue[2], yellow[0], yellow[1], yellow[2], Xbola,Ybola,2);
-    }*/
+    }
+
+    //Obstáculos
+    /*vector<State> obs;
+    for(int i = 0;i<3;i++)
+    {
+        if(index_rrt!=i)
+            obs.push_back(State(blue[i].x(),blue[i].y()));
+
+        obs.push_back(State(yellow[i].x(),yellow[i].y()));
+    }
+
+    RRT(blue[index_rrt],destino,obs);
+
+    State new_ = *(rrt->GetOptimaNodes().end()-1);
+     vaiPara(blue[index_rrt],new_.x,new_.y,0);*/
+
 
     cinematica_azul();
 
@@ -1079,6 +1083,50 @@ void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int 
    }else{
        vaiPara(rb,-x_penalti -0.1, 0.0,id);
    }
+}
+
+//Zagueiro de cone com a ideia de predição potencial de antecipação usando uma espécie de "Motor Schema"
+
+void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, int id)
+{
+    double raio = 0.08;
+    double angle;
+    double dist;
+    double gain = 3*raio;  //Ganho inicial, dependência da região do campo
+    double v_of;
+    if(ball.x()-blue[id].x()<0)
+        v_of = ball.x()-blue[id].x();
+    else
+        v_of = 0;
+
+    double dist_2 = sqrt(pow(ball.x()-blue[id].x(),2.0)+pow( ball.y()-blue[id].y(),2.0));
+
+
+    angle = atan2(blue[id].x() - predictedBall.x - v_of,blue[id].y() - predictedBall.y);
+    double componenteX = blue[id].x() -  gain*sin(angle);
+    double componenteY = blue[id].y() -  gain*cos(angle);
+
+
+    for(int i = 0;i<3;i++)
+    {
+        angle = atan2(yellow[i].x() - ball.x(),yellow[i].y() - ball.y());
+        dist = sqrt(pow(ball.x()-yellow[i].x(),2.0)+pow( ball.y()-yellow[i].y(),2.0));
+        gain = raio/dist;
+        if(gain>5*raio)
+            gain = 5*raio;
+
+        componenteX += -gain*sin(angle);
+        componenteY += -gain*sin(angle);
+    }
+
+    vaiPara(blue[id],componenteX,componenteY,id);
+
+    if(v_of==0 || dist_2 < 0.15)
+        vaiPara(blue[id],ball.x(),ball.y(),id);
+
+
+
+
 }
 // Zagueiro David + Cone
 void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int id){

@@ -29,7 +29,7 @@ struct ballPredPos
     double y;
 };
 
-class Team : public std::array<fira_message::Robot,3>
+class Team : public std::array<fira_message::Robot,6>
 {
 public:
 
@@ -42,6 +42,18 @@ public:
         (*this)[0] = rb0;
         (*this)[1] = rb1;
         (*this)[2] = rb2;
+
+    }
+    Team(fira_message::Robot rb0, fira_message::Robot rb1, fira_message::Robot rb2,
+         fira_message::Robot rb3, fira_message::Robot rb4, fira_message::Robot rb5)
+    {
+
+        (*this)[0] = rb0;
+        (*this)[1] = rb1;
+        (*this)[2] = rb2;
+        (*this)[3] = rb3;
+        (*this)[4] = rb4;
+        (*this)[5] = rb5;
 
     }
 
@@ -59,6 +71,7 @@ class Strategy {
     vector<ballPredPos> ballPredMemory; //Vetor de memória com posições passadas
     void predict_ball(fira_message::Ball ball);
     ballPredPos predictedBall; //Inicializado no construtor
+    vector<double> predict_vector;
 
     vector<vector<double>> vRL, VW;
 
@@ -115,6 +128,7 @@ class Strategy {
     void goleiro2(fira_message::Robot,fira_message::Ball,int);
     void chute(int);
     void zagueiro(fira_message::Robot, double, double,int);
+    void zagueiro_cone(Team blue, Team yellow,fira_message::Ball ball,int id);
     void zagueiro2(fira_message::Robot, double, double, int);
   private:
     double L; //Distância entre roda e centro
