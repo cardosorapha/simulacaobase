@@ -106,6 +106,10 @@ int main(int argc, char *argv[]){
                //----------------Plot Virtual---------------------//
 
                 image= cv::imread("campo.png",cv::IMREAD_COLOR);
+                //Marcações(detalhe)
+                rectangle(image,Point(((-0.75)+0.75)*400,(-0.35+0.65)*400),Point(((-0.60)+0.75)*400,(+0.35+0.65)*400),Scalar(255,255,255),2);
+                rectangle(image,Point(((+0.60)+0.75)*400,(-0.35+0.65)*400),Point(((0.75)+0.75)*400,(+0.35+0.65)*400),Scalar(255,255,255),2);
+                rectangle(image,Point(((-0.75)+0.75)*400,(-0.65+0.65)*400),Point((0.0+0.75)*400,(+0.65+0.65)*400),Scalar(255,255,255),2);
                 //Bola
                 circle(image,Point((ball.x()+0.75)*400,(-ball.y()+0.65)*400),5,Scalar(0,110,255),7);
                 //Time blue
@@ -118,49 +122,30 @@ int main(int argc, char *argv[]){
                 circle(image,Point(((*yellow)[2].x()+0.75)*400,(-(*yellow)[2].y()+0.65)*400),8,Scalar(0,255,255),12);
 
                 //Seta de predição
-                arrowedLine(image,Point((ball.x()+0.75)*400,(-ball.y()+0.65)*400),Point((estrategia.predictedBall.x+0.75)*400,(-estrategia.predictedBall.y+0.65)*400),Scalar(255,255,0),2);
+                arrowedLine(image,Point((ball.x()+0.75)*400,(-ball.y()+0.65)*400),Point(((estrategia.predictedBall.x)+0.75)*400,(-estrategia.predictedBall.y+0.65)*400),Scalar(255,255,0),2);
 
-                //Vetor de movimento do time adversárrio
+                //Plot dos zagueiros
                 double raio = 0.08;
 
                 arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((*blue)[1].x()+raio+0.75)*400,(-(*blue)[1].y()+0.65)*400),Scalar(255,255,255),2);
                 arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((*blue)[1].x()+0.75)*400,(-((*blue)[1].y()+raio)+0.65)*400),Scalar(255,255,255),2);
+                arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((estrategia.componentes->at(0).first)+0.75)*400,(-(estrategia.componentes->at(0).second)+0.65)*400),Scalar(255,255,0),2);
+                arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((estrategia.componentes->at(1).first)+0.75)*400,(-(estrategia.componentes->at(1).second)+0.65)*400),Scalar(255,0,255),2);
 
-                double v_of;
-                if(ball.x()-(*blue)[1].x()<0)
-                    v_of = ball.x()-(*blue)[1].x();
-                else
-                    v_of = 0;
-
-                double angle = atan2((*blue)[1].x() - estrategia.predictedBall.x - v_of,(*blue)[1].y() - estrategia.predictedBall.y);
-
-                double componenteX = (*blue)[1].x() -  3*raio*sin(angle);
-                double componenteY = (*blue)[1].y()  -  3*raio*cos(angle);
-                arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((componenteX)+0.75)*400,(-(componenteY)+0.65)*400),Scalar(255,255,0),2);
-
-                double comp_x = componenteX;
-                double comp_y = componenteY;
-                for (int i = 0;i<3;i++)
+                for (int i = 2;i<5;i++)
                 {
-                    double angle = atan2((*yellow)[i].x() - ball.x(),(*yellow)[i].y() - ball.y());
-
-                    double dist = sqrt(pow(ball.x()-(*yellow)[i].x(),2.0)+pow( ball.y()-(*yellow)[i].y(),2.0));
-
-                    double componenteX = (*blue)[1].x() -  (raio/dist)*sin(angle);
-                    double componenteY = (*blue)[1].y()  -  (raio/dist)*cos(angle);
-
-
-                    comp_x += -(raio/dist)*sin(angle);
-                    comp_y += -(raio/dist)*cos(angle);
-
-                    //arrowedLine(image,Point(((*yellow)[i].x()+0.75)*400,(-(*yellow)[i].y()+0.65)*400),
-                               // Point((((*yellow)[i].x() -  (raio/dist)*sin(angle))+0.75)*400,(-((*yellow)[i].y()  -  (raio/dist)*cos(angle))+0.65)*400),Scalar(255,0,255),2);
                     arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),
-                                Point(((componenteX)+0.75)*400,(-(componenteY)+0.65)*400),Scalar(0,0,255),2);
+                                Point(((estrategia.componentes->at(i).first)+0.75)*400,(-(estrategia.componentes->at(i).second)+0.65)*400),Scalar(0,0,255),2);
+                    circle(image,Point(((*yellow)[0].x()+0.75)*400,(-(*yellow)[0].y()+0.65)*400),0.1*400,Scalar(0,0,255));
+                    circle(image,Point(((*yellow)[0].x()+0.75)*400,(-(*yellow)[0].y()+0.65)*400),0.15*400,Scalar(0,255,0));
+                    circle(image,Point(((*yellow)[2].x()+0.75)*400,(-(*yellow)[2].y()+0.65)*400),0.1*400,Scalar(0,0,255));
+                    circle(image,Point(((*yellow)[2].x()+0.75)*400,(-(*yellow)[2].y()+0.65)*400),0.15*400,Scalar(0,255,0));
+                    circle(image,Point(((*yellow)[1].x()+0.75)*400,(-(*yellow)[1].y()+0.65)*400),0.1*400,Scalar(0,0,255));
+                    circle(image,Point(((*yellow)[1].x()+0.75)*400,(-(*yellow)[1].y()+0.65)*400),0.15*400,Scalar(0,255,0));
 
                 }
-                arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((comp_x)+0.75)*400,(-(comp_y)+0.65)*400),Scalar(0,255,255),2,5,0,0.3);
-                circle(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),0.15*400,Scalar(0,255,0),2);
+                arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((estrategia.resultante->at(0))+0.75)*400,(-(estrategia.resultante->at(1))+0.65)*400),Scalar(0,255,255),2,5,0,0.3);
+                circle(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),0.2*400,Scalar(255,100,125),2);
 
 
 /*

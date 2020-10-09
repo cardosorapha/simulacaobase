@@ -80,6 +80,11 @@ class Strategy {
     bool chave = false;
     int index_rrt = 0;
 
+    //Atributos para zagueiro_cone
+    vector<double>* resultante = NULL;
+    vector<pair<double,double>>* componentes = NULL;
+
+
     int qtdRobos, vrMax;
     double Vmax, Wmax;
 

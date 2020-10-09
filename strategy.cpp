@@ -159,7 +159,7 @@ void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, co
 
     zagueiro_cone(blue,yellow, ball,1);
 
-    if(7 == 7){
+    if(7 == 3){
        vaiPara_hotwheels(blue[0], blue[1], blue[2], yellow[0], yellow[1], yellow[2], Xbola,Ybola,2);
     }
 
@@ -1094,34 +1094,88 @@ void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, in
     double dist;
     double gain = 3*raio;  //Ganho inicial, dependência da região do campo
     double v_of;
-    if(ball.x()-blue[id].x()<0)
-        v_of = ball.x()-blue[id].x();
-    else
-        v_of = 0;
+    int k;
 
     double dist_2 = sqrt(pow(ball.x()-blue[id].x(),2.0)+pow( ball.y()-blue[id].y(),2.0));
 
 
-    angle = atan2(blue[id].x() - predictedBall.x - v_of,blue[id].y() - predictedBall.y);
+    if(ball.x()-blue[id].x()<0)
+    {
+       v_of = ball.x()-blue[id].x();
+       k=1;
+    }
+    else
+    {
+        v_of = 0;
+        k=0;
+    }
+
+    //Vetor que aponta na direção do ponto predito da posição da bola com um fator "v_of"
+    if(dist_2> 0.2 && k == 1)
+        angle = atan2(blue[id].x() - (predictedBall.x+v_of),blue[id].y() - predictedBall.y);
+    else
+        angle = atan2(blue[id].x() - ball.x(),blue[id].y() - ball.y());
+
+
     double componenteX = blue[id].x() -  gain*sin(angle);
     double componenteY = blue[id].y() -  gain*cos(angle);
+
+    delete componentes;
+    componentes = new vector<pair<double,double>>();
+    delete resultante;
+    resultante = new vector<double>();
+
+    //Componentes para plot
+    componentes->push_back(make_pair(componenteX,componenteY));
+
+    //Usando vetor do zaguairo ao ponto predito, para composição
+    resultante->push_back(componenteX);
+    resultante->push_back(componenteY);
+
+    //Usando o vetor de predição com origem no zagueiro, para composição
+
+    (*resultante)[0]+=k*(-predictedBall.x + ball.x());
+    (*resultante)[1]+=k*(-predictedBall.y + ball.y());
+
+    //Componentes para plot
+    componentes->push_back(make_pair(blue[id].x()-(k*(-predictedBall.x + ball.x())),blue[id].y()-(k*(-predictedBall.y + ball.y()))));
+
+    //Repulsão da área do goleiro
+    if(blue[id].x()<-0.40 && (blue[id].y()<0.3 && blue[id].y()>-0.30))
+    {
+        (*resultante)[0]+=-2*(-0.40-(blue[id].x()))*sin(atan2(blue[id].x() - ball.x(),blue[id].y() - ball.y()));
+        (*resultante)[1]+=-2*(-0.40-(blue[id].x()))*cos(atan2(blue[id].x() - ball.x(),blue[id].y() - ball.y()));
+    }
+
 
 
     for(int i = 0;i<3;i++)
     {
         angle = atan2(yellow[i].x() - ball.x(),yellow[i].y() - ball.y());
         dist = sqrt(pow(ball.x()-yellow[i].x(),2.0)+pow( ball.y()-yellow[i].y(),2.0));
-        gain = raio/dist;
-        if(gain>5*raio)
-            gain = 5*raio;
 
-        componenteX += -gain*sin(angle);
-        componenteY += -gain*sin(angle);
+        if(dist<0.15 && dist > 0.1)
+            gain = 4*(0.15 - dist);
+        else if(dist < 0.1)
+            gain = 0.2;
+        else
+            gain = 0.0;
+
+        componenteX = blue[id].x()-gain*sin(angle);
+        componenteY = blue[id].y()-gain*cos(angle);
+
+        //Componentes para plot
+        componentes->push_back(make_pair(componenteX,componenteY));
+
+        //Usando o vetor Adversário-bola com um ganho "gain", para composição
+        (*resultante)[0]+=-gain*sin(angle);
+        (*resultante)[1]+=-gain*cos(angle);
+
     }
 
-    vaiPara(blue[id],componenteX,componenteY,id);
+    vaiPara(blue[id],(*resultante)[0],(*resultante)[1],id);
 
-    if(v_of==0 || dist_2 < 0.15)
+    if(v_of==0 && dist_2 < 0.07)
         vaiPara(blue[id],ball.x(),ball.y(),id);
 
 
