@@ -107,7 +107,7 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
     vector <double> destino = {ball.x(),ball.y()};
 
     goleiro(b0,destino[0],destino[1],0);
-    zagueiro(b1,destino[0],destino[1],1);
+    zagueiro3(b1,destino[0],destino[1],1);
     vaiPara_desviando(b2,destino[0],destino[1],2);
 
     cinematica_azul();
@@ -253,7 +253,7 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 {
     double  Vaux = 0;
-    double  k_lin = 4;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
+    double  k_lin = 3;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
     double  V_max = Vmax;       //constante limitante da tangente hiperbólica
     double  v_min = 0.5;  	 //módulo da velocidade linear mínima permitida Rapha colocou 0.03
     double  ang_grande = 30; //para ângulos maiores que esse valor o sistema da prioridade ao W, reduzindo o V
@@ -928,7 +928,6 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
    // }
 }
 
-
 //Calcula o esforço para girar o robô em direção a um determinado ponto
 double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
 {
@@ -950,4 +949,27 @@ double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
 
     W = Wmax*tanh(0.03*dtheta);
     return W;
+}
+
+
+// zagueiro lazaro
+
+void Strategy::zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id){
+   double x_penalti =  0.4;
+   double x_meio_de_campo = 0.0;
+   double x_radius = 0.2;
+   double y_top = 0.35;
+   if(xbola >= x_penalti){
+       vaiPara_desviando(rb,x_meio_de_campo,ybola,id);
+   }else if(xbola >= x_meio_de_campo){
+       vaiPara_desviando(rb,-x_radius,ybola,id);
+   }else if(xbola >= -x_penalti){
+       vaiPara_desviando(rb,xbola,ybola,id);
+   }else if(ybola >= y_top && rb.y() <= ybola){
+       vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
+   }else if(ybola <= -y_top && rb.y() >= ybola){
+       vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
+   }else{
+       vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
+   }
 }

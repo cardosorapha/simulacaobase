@@ -84,6 +84,7 @@ class Strategy {
     void chute(int);
     void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro2(fira_message::Robot, double, double, int);
+    void zagueiro3(fira_message::Robot, double, double, int);
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
