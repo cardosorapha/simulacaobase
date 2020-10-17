@@ -5,10 +5,10 @@
 #include "net/grSim_client.h"
 #include "util/timer.h"
 
-#include "pb/command.pb.h"
-#include "pb/common.pb.h"
-#include "pb/packet.pb.h"
-#include "pb/replacement.pb.h"
+#include "net/pb/command.pb.h"
+#include "net/pb/common.pb.h"
+#include "net/pb/packet.pb.h"
+#include "net/pb/replacement.pb.h"
 
 #include "strategy.h"
 
@@ -30,17 +30,24 @@ void printRobotInfo(const fira_message::Robot & robot) {
 int main(int argc, char *argv[]){
     (void)argc;
     (void)argv;
-    RoboCupSSLClient client;
-    client.open(false);
+
+    //define your team color here
+    bool my_robots_are_yellow = false;
+    
+    // the ip address need to be in the range 224.0.0.0 through 239.255.255.255
+    RoboCupSSLClient visionClient("127.0.0.1", 10020);
+    visionClient.open(false);
+
+    GrSim_Client commandClient("127.0.0.1", 20011);
+
     fira_message::sim_to_ref::Environment packet;
 
-    GrSim_Client grSim_client;
-
     //inicialização da classe estratégia
-    Strategy estrategia;
+    Strategy estrategia_azul(false);
+    Strategy estrategia_amarelo(true);
 
     while(true) {
-        if (client.receive(packet)) {
+        if (visionClient.receive(packet)) {
             //printf("-----Received Wrapper Packet---------------------------------------------\n");
             //see if the packet contains a robot detection frame:
             if ((packet.has_frame())&&(packet.has_field())) {
@@ -50,7 +57,8 @@ int main(int argc, char *argv[]){
                 int robots_yellow_n =  detection.robots_yellow_size();
                 //Ball info:
                 fira_message::Ball ball = detection.ball();
-                estrategia.predict_ball(ball);
+                estrategia_azul.predict_ball(ball);
+                estrategia_amarelo.predict_ball(ball);
                 //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
 
                 //printf("-[Geometry Data]-------\n");
@@ -71,13 +79,22 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
-                estrategia.atualiza_pos(b0,b1,b2,y0,y1,y2);
+                estrategia_azul.atualiza_pos(b0,b1,b2,y0,y1,y2);
+                estrategia_amarelo.atualiza_pos(b0,b1,b2,y0,y1,y2);
 
-                estrategia.strategy_blue(b0,b1,b2,ball,field);
+                estrategia_azul.strategy_blue(b0,b1,b2,ball,field);
+                estrategia_amarelo.strategy_yellow(y0,y1,y2,ball,field);
 
-                //Enviando velocidades
-                for(int i = 0;i < estrategia.qtdRobos;i++)
-                    grSim_client.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],i);
+                //Enviando velocidades para o azul
+                my_robots_are_yellow = false;
+                for(int i = 0;i < estrategia_azul.qtdRobos;i++)
+                    commandClient.sendCommand(estrategia_azul.vRL[i][1],estrategia_azul.vRL[i][0],my_robots_are_yellow,i);
+
+                //Enviando velocidades para o azul
+                my_robots_are_yellow = true;
+                for(int i = 0;i < estrategia_amarelo.qtdRobos;i++)
+                    commandClient.sendCommand(estrategia_amarelo.vRL[i][1],estrategia_amarelo.vRL[i][0],my_robots_are_yellow,i);
+
                 //Debug
                //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
                //printf("W:%f\n",b2.vorientation());
