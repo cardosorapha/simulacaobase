@@ -5,17 +5,17 @@
 #include "net/grSim_client.h"
 #include "util/timer.h"
 
-#include "net/pb/command.pb.h"
-#include "net/pb/common.pb.h"
-#include "net/pb/packet.pb.h"
-#include "net/pb/replacement.pb.h"
+#include "pb/command.pb.h"
+#include "pb/common.pb.h"
+#include "pb/packet.pb.h"
+#include "pb/replacement.pb.h"
 
 #include "strategy.h"
 
 #include <iostream>
 
 using namespace std;
-
+/*
 void printRobotInfo(const fira_message::Robot & robot) {
 
     printf("ID=%3d \n",robot.robot_id());
@@ -26,13 +26,13 @@ void printRobotInfo(const fira_message::Robot & robot) {
     printf("ANGLE=%6.3f \n",robot.orientation());
     printf("ANGLE VEL=%6.3f \n",robot.vorientation());
 }
-
+*/
 int main(int argc, char *argv[]){
     (void)argc;
     (void)argv;
 
     //define your team color here
-    bool my_robots_are_yellow = false;
+    bool my_robots_are_yellow = true;
     
     // the ip address need to be in the range 224.0.0.0 through 239.255.255.255
     RoboCupSSLClient visionClient("127.0.0.1", 10020);
@@ -43,8 +43,8 @@ int main(int argc, char *argv[]){
     fira_message::sim_to_ref::Environment packet;
 
     //inicialização da classe estratégia
-    Strategy estrategia_azul(false);
-    Strategy estrategia_amarelo(true);
+    Strategy estrategia_azul(!my_robots_are_yellow);
+    Strategy estrategia_amarelo(my_robots_are_yellow);
 
     while(true) {
         if (visionClient.receive(packet)) {
@@ -86,12 +86,10 @@ int main(int argc, char *argv[]){
                 estrategia_amarelo.strategy_yellow(y0,y1,y2,ball,field);
 
                 //Enviando velocidades para o azul
-                my_robots_are_yellow = false;
                 for(int i = 0;i < estrategia_azul.qtdRobos;i++)
-                    commandClient.sendCommand(estrategia_azul.vRL[i][1],estrategia_azul.vRL[i][0],my_robots_are_yellow,i);
+                    commandClient.sendCommand(estrategia_azul.vRL[i][1],estrategia_azul.vRL[i][0],!my_robots_are_yellow,i);
 
-                //Enviando velocidades para o azul
-                my_robots_are_yellow = true;
+                //Enviando velocidades para o amarelo
                 for(int i = 0;i < estrategia_amarelo.qtdRobos;i++)
                     commandClient.sendCommand(estrategia_amarelo.vRL[i][1],estrategia_amarelo.vRL[i][0],my_robots_are_yellow,i);
 
