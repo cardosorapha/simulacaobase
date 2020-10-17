@@ -30,7 +30,7 @@ struct ballPredPos
 class Strategy {
   public:
 
-    Strategy();
+    Strategy(bool time);
     ~Strategy();
 
     vector<ballPredPos> ballPredMemory; //Vetor de memória com posições passadas
@@ -41,6 +41,8 @@ class Strategy {
 
     int qtdRobos, vrMax;
     double Vmax, Wmax;
+
+    int lado;
 
     void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2
                       ,fira_message::Ball ball, const fira_message::Field & field);
@@ -60,7 +62,6 @@ class Strategy {
     double controleLinear(fira_message::Robot,double,double);
 
     //Alterações Petersson
-    double irponto_angular(fira_message::Robot, double, double);
     double pos_robos[6][2];
     double velocidades[6];
     void saturacao(double V[]);
@@ -84,6 +85,10 @@ class Strategy {
     void chute(int);
     void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro2(fira_message::Robot, double, double, int);
+    void zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id);
+    void atacante1(fira_message::Robot rb, double xbola, double ybola, int id);
+    void calc_repulsao2(fira_message::Robot rb,double px,double py,double F[]);
+
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
