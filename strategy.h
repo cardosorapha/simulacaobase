@@ -77,8 +77,11 @@ class Strategy {
 
     rrt_graph *rrt = NULL;
     vector<State> *waypopints = NULL;
+    queue<State> trajeto;
     bool chave = false;
+    bool switchKey = true;
     int index_rrt = 0;
+    int cont = 0;
 
     //Atributos para zagueiro_cone
     vector<double>* resultante = NULL;
@@ -88,8 +91,7 @@ class Strategy {
     int qtdRobos, vrMax;
     double Vmax, Wmax;
 
-    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
-                       fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
+    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2
                       ,fira_message::Ball ball, const fira_message::Field & field);
 
     void strategy_blue(Team blue, Team yellow,fira_message::Ball ball, const fira_message::Field & field);
@@ -109,6 +111,7 @@ class Strategy {
     double controleLinear(fira_message::Robot,double,double);
 
     //Alterações Petersson
+    double irponto_angular(fira_message::Robot, double, double);
     double pos_robos[6][2];
     double velocidades[6];
     void saturacao(double V[]);
@@ -117,24 +120,26 @@ class Strategy {
     void converte_vetor(double V[],double);
     double filtro(double V,int);
     void vaiPara_desviando(fira_message::Robot,double,double,int);
-    void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+    /*void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                      fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                      double px, double py,int id);
     bool robo_parede(fira_message::Robot);
     void vaiPara2(fira_message::Robot,double,double,int);
     void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
     void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
-
+    */
     vector<double> inserirRRT(vector<double>,vector<double>,int);
     vector<double> direcao_provavel(ballPredPos, fira_message::Ball);
     void posicionamento(fira_message::Robot, int, bool);
     void goleiro(fira_message::Robot, double, double,int);
-    void goleiro_petersson(fira_message::Robot, double, double,int);
+    void goleiro_petersson(fira_message::Robot,fira_message::Ball,int);
     void goleiro2(fira_message::Robot,fira_message::Ball,int);
     void chute(int);
     void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro_cone(Team blue, Team yellow,fira_message::Ball ball,int id);
     void zagueiro2(fira_message::Robot, double, double, int);
+    void actacante_cone(Team blue, Team yellow,fira_message::Ball ball,int id);
+
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
@@ -154,6 +159,7 @@ class Strategy {
 
     void RRT(State init, State goal, vector<State> obs_centers,  bool flag = false);
     void RRT(fira_message::Robot rb, vector<double> goal, vector<State> obs_centers,  bool flag = false);
+    bool RRT_act(fira_message::Robot rb,stack<State> trajetoria, int id);
 
 
 };

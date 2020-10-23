@@ -101,35 +101,14 @@ void Strategy::predict_ball(fira_message::Ball ball)
 }
 
 void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
-                             fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
     vector <double> destino = {ball.x(),ball.y()};
 
-
-    //vaiPara2(b0,predictedBall.x,predictedBall.y,0);
-    double Xbola;
-    double Ybola;
-
-    if (distancia(b2, ball.x(), ball.y()) > 0.5){
-
-        Xbola = predictedBall.x;
-        Ybola = predictedBall.y;
-
-    }else{
-
-        Xbola = ball.x();
-        Ybola = ball.y();
-    }
-
-    goleiro(b0,ball.x(), ball.y(),0);
-
-    zagueiro2(b1,ball.x(), ball.y(),1);
-
-    if(7 == 7){
-       vaiPara_hotwheels(b0, b1, b2, y0, y1, y2, Xbola,Ybola,2);
-    }
+    goleiro(b0,destino[0],destino[1],0);
+    zagueiro(b1,destino[0],destino[1],1);
+    vaiPara_desviando(b2,destino[0],destino[1],2);
 
     cinematica_azul();
 
@@ -155,16 +134,23 @@ void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, co
         Ybola = ball.y();
     }
 
+    destino[0] = Xbola;
+    destino[1] = Ybola;
+
     goleiro(blue[0],ball.x(), ball.y(),0);
 
     zagueiro_cone(blue,yellow, ball,1);
 
+
     if(7 == 3){
-       vaiPara_hotwheels(blue[0], blue[1], blue[2], yellow[0], yellow[1], yellow[2], Xbola,Ybola,2);
+       vaiPara_desviando(blue[2],Xbola,Ybola,2);
+
     }
 
+/*
+
     //Obstáculos
-    /*vector<State> obs;
+    vector<State> obs;
     for(int i = 0;i<3;i++)
     {
         if(index_rrt!=i)
@@ -173,13 +159,41 @@ void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, co
         obs.push_back(State(yellow[i].x(),yellow[i].y()));
     }
 
-    RRT(blue[index_rrt],destino,obs);
+    if(true)
+    {
+        cout << "Planejando..."<< endl;
+        RRT(blue[index_rrt],destino,obs);
+        cout << "Planejado!"<< endl;
 
-    State new_ = *(rrt->GetOptimaNodes().end()-1);
-     vaiPara(blue[index_rrt],new_.x,new_.y,0);*/
+    }
+    switchKey = false;
+
+     //switchKey = RRT_act(blue[index_rrt],trajeto,index_rrt);
+     cout << "Agindo..."<< endl;
+     //cont++;
+     if(trajeto.size()>0)
+        vaiPara(blue[index_rrt],trajeto.front().x,trajeto.front().y,index_rrt);
+
+     double dist = distancia(State(blue[index_rrt].x(),blue[index_rrt].y()),trajeto.front());
+     if(dist<0.05)
+     {
+       //cont = 0;
+         cout << "Trocando de Meta..."<< endl;
+         trajeto.pop();
+         if(trajeto.empty())
+         {
+            cout << "Fim da ação!"<< endl;
+            switchKey = true;
+         }
+     }
+
+    //State new_ = *(rrt->GetOptimaNodes().end()-1);
+    //vaiPara(blue[index_rrt],Xbola,Ybola,0);
+*/
 
 
     cinematica_azul();
+
 
 }
 
@@ -187,6 +201,7 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
                      fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
 {
     //TODO
+
 }
 
 //Vl = (V - WL)/R
@@ -430,7 +445,7 @@ void Strategy::RRT(State init, State goal, vector<State> obs_centers, bool flag)
         else
             x_rand = rrt->random_state(init,GoalFrontier,0.5,0.4,raio,waypopints);
 
-        rrt->Extend_SH(x_rand,obs_centers,0.07,raio);
+        rrt->Extend_SH(x_rand,obs_centers,0.08,raio);
 
         if(distancia(rrt->x_new, GoalFrontier)<0.02)
         {
@@ -445,7 +460,7 @@ void Strategy::RRT(State init, State goal, vector<State> obs_centers, bool flag)
         if(rrt->x_new == GoalFrontier)
             break;
     }
-    rrt->smooth_path(obs_centers,0.07);
+    rrt->smooth_path(obs_centers,0.08);
     chave = true;
     delete waypopints;
     waypopints = new vector<State>();
@@ -507,6 +522,9 @@ void Strategy::RRT(fira_message::Robot rb, vector<double> _goal, vector<State> o
             break;
     }
     rrt->smooth_path(obs_centers,0.07);
+    trajeto = rrt->GetOptimaNodes();
+    //rrt->generat_traject();
+    //trajeto = rrt->_ToGoal();
     chave = true;
     delete waypopints;
     waypopints = new vector<State>();
@@ -515,11 +533,27 @@ void Strategy::RRT(fira_message::Robot rb, vector<double> _goal, vector<State> o
 
 }
 
+bool Strategy::RRT_act(fira_message::Robot rb, stack<State> trajetoria,int id)
+{
+    vaiPara(rb,trajetoria.top().x,trajetoria.top().y,id);
+    double dist = distancia(State(rb.x(),rb.y()),trajetoria.top());
+    if(dist<0.05)
+    {
+        trajetoria.pop();
+        if(trajetoria.empty())
+            return true;
+    }
+
+
+    return false;
+
+}
+
 Strategy::~Strategy()
 {
 
 }
-
+/* Desnecessário
 //Verifica se o robô está perto da parede
 bool Strategy::robo_parede(fira_message::Robot rb){
     //limites de x e y
@@ -560,6 +594,7 @@ void Strategy::vaiPara2(fira_message::Robot rb, double px, double py, int id)
     ang_err angulo = olhar(rb, px, py);
     VW[id][1] = controleAngular(angulo.fi);
 }
+*/
 
 //Alterações Petersson
 //Função de saturação dos valores a serem enviados aos vaipara
@@ -714,6 +749,9 @@ void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int 
     double ka = 1.0;
 
 
+    converte_vetor(V,0.1);
+    converte_vetor(F,0.2);
+
     double new_pos[2] = {rb.x() + ka*V[0] + kr*F[0],rb.y() + ka*V[1] + kr*F[1]};
 
     Strategy::saturacao(new_pos);
@@ -723,7 +761,7 @@ void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int 
     filtro(VW[id][0],id);
 }
 
-
+/* Desnecessario
 //Verifica se o robo precisa se afastar de outros robos para evitar travamentos
 void Strategy::sai_robo(fira_message::Robot rb,fira_message::Robot ry,double F[]){
 
@@ -751,7 +789,7 @@ void Strategy::sai_robo2(fira_message::Robot rb,fira_message::Robot ry,double F[
          F[1] += raio_adversario*dist_y/dist_adversario - dist_y;
      }
 }
-
+*/
 
 vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int opcao){
     //Se a opção for zero concatena os vetores, senao apaga tudo e insere o novo vetor no lugar
@@ -792,6 +830,7 @@ void Strategy::posicionamento(fira_message::Robot rb, int id, bool opcao)
 }
 
 
+/*Desnecessario
 void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, int id)
 {
     //limites de x e y
@@ -868,7 +907,7 @@ void Strategy::vaiParaDinamico2(fira_message::Robot rb, double px, double py, in
 
     atualiza_memoria_azul(erro_linear,erro_angular);
 }
-
+*/
 //Goleiro de Petersson
 void Strategy::goleiro2(fira_message::Robot rb,fira_message::Ball ball, int id){
 
@@ -956,6 +995,7 @@ void Strategy::goleiro(fira_message::Robot rb,double xbola,double ybola,int id){
 void Strategy::chute(int id){
     VW[id][1] = -100;
 }
+/* Não funciona mais com as mudanças
 void Strategy::vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                  fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                  double px, double py,int id){
@@ -1064,6 +1104,8 @@ void Strategy::vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,
             }
         }
 }
+*/
+
 // Zagueiro David
 void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int id){
    double x_penalti =  0.4;
@@ -1086,7 +1128,6 @@ void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int 
 }
 
 //Zagueiro de cone com a ideia de predição potencial de antecipação usando uma espécie de "Motor Schema"
-
 void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, int id)
 {
     double raio = 0.08;
@@ -1094,7 +1135,7 @@ void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, in
     double dist;
     double gain = 3*raio;  //Ganho inicial, dependência da região do campo
     double v_of;
-    int k;
+    int k=0;
 
     double dist_2 = sqrt(pow(ball.x()-blue[id].x(),2.0)+pow( ball.y()-blue[id].y(),2.0));
 
@@ -1134,21 +1175,30 @@ void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, in
 
     //Usando o vetor de predição com origem no zagueiro, para composição
 
-    (*resultante)[0]+=k*(-predictedBall.x + ball.x());
-    (*resultante)[1]+=k*(-predictedBall.y + ball.y());
+    (*resultante)[0]+=-k*(-predictedBall.x + ball.x());
+    (*resultante)[1]+=-k*(-predictedBall.y + ball.y());
 
     //Componentes para plot
     componentes->push_back(make_pair(blue[id].x()-(k*(-predictedBall.x + ball.x())),blue[id].y()-(k*(-predictedBall.y + ball.y()))));
 
     //Repulsão da área do goleiro
-    if(blue[id].x()<-0.40 && (blue[id].y()<0.3 && blue[id].y()>-0.30))
+    if(blue[id].x()<-0.40 && (blue[id].y()<0.3 && blue[id].y()>-0.30) && ball.x()>-0.6)
     {
         (*resultante)[0]+=-2*(-0.40-(blue[id].x()))*sin(atan2(blue[id].x() - ball.x(),blue[id].y() - ball.y()));
         (*resultante)[1]+=-2*(-0.40-(blue[id].x()))*cos(atan2(blue[id].x() - ball.x(),blue[id].y() - ball.y()));
     }
+    //Repulsão da bola no retorno do zagueiro
+    if(k==1 && dist_2<0.2)
+    {
+        (*resultante)[0]+=-gain*sin(M_PI/2);
+        (*resultante)[1]+=-gain*cos(M_PI/2);
+    }
+    //Espaço para adicionar mais "elementos de repulsão
+    /*
+     * Incrementar um campo de repulsão na bola para o retorno de posiçao
+     */
 
-
-
+    double min_dist = 999;
     for(int i = 0;i<3;i++)
     {
         angle = atan2(yellow[i].x() - ball.x(),yellow[i].y() - ball.y());
@@ -1160,6 +1210,9 @@ void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, in
             gain = 0.2;
         else
             gain = 0.0;
+
+        if(min_dist>dist)
+            min_dist = dist;
 
         componenteX = blue[id].x()-gain*sin(angle);
         componenteY = blue[id].y()-gain*cos(angle);
@@ -1173,11 +1226,30 @@ void Strategy::zagueiro_cone(Team blue, Team yellow, fira_message::Ball ball, in
 
     }
 
-    vaiPara(blue[id],(*resultante)[0],(*resultante)[1],id);
 
-    if(v_of==0 && dist_2 < 0.07)
-        vaiPara(blue[id],ball.x(),ball.y(),id);
+    if(((k==0 && dist_2 < 0.15)||((k==0 && dist_2/min_dist < 1.3)&&blue[id].x()<0)||((k==0 && dist_2/min_dist < 0.6)&&blue[id].x()>=0))
+            &&!(blue[id].x()<-0.5 && (blue[id].y()<0.35 && blue[id].y()>-0.35)))
+    {
+        vaiPara_desviando(blue[id],ball.x(),ball.y(),id);
+    }
+    else
+    {
+        if(blue[id].x()<-0.50 && (blue[id].y()<0.35 && blue[id].y()>-0.35))
+        {
+                vaiPara_desviando(blue[id],-0.55,(*resultante)[1],id);
+        }
+        else
+        {
+            if(ball.x()<-0.5 && (ball.y()<0.3 && ball.y()>-0.30) && k==1)
+                vaiPara_desviando(blue[id],-0.4,0.0,id);
+            else if(ball.x()>0)
+                vaiPara_desviando(blue[id],0.0,(*resultante)[1],id);
+            else
+                vaiPara_desviando(blue[id],(*resultante)[0],(*resultante)[1],id);
+        }
 
+
+    }
 
 
 
@@ -1255,6 +1327,35 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
 
    // if((distancia(rb,xbola,ybola) < 0.08) && (xbola > rb.x())){
    //     chute(id);
-   // }
+    // }
+}
+
+
+//Calcula o esforço para girar o robô em direção a um determinado ponto
+double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
+{
+    //Precisa saber se olha de frente ou de costas
+    //Ângulos são em radianos
+    double err_x = x - robot.x();
+    double err_y = y - robot.y();
+    double theta = 0;
+    double dtheta_frente = 0;
+    double dtheta_costas = 0;
+    double dtheta = 0;
+    double W = 0;
+
+    theta = atan2(err_y,err_x); //Ângulo desejado
+
+    dtheta_frente = theta-robot.orientation();
+    dtheta_costas = theta-(robot.orientation()+M_PI);
+    dtheta = (dtheta_frente<dtheta_costas)?(dtheta_frente):(dtheta_costas); //O menor é o executado, não tá muito certo
+
+    W = Wmax*tanh(0.03*dtheta);
+    return W;
+}
+
+void Strategy::actacante_cone(Team blue, Team yellow, fira_message::Ball ball, int id)
+{
+
 }
 

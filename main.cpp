@@ -104,8 +104,8 @@ int main(int argc, char *argv[]){
                //printf("VL:%f\n",estrategia.vRL[2][1]);
 
                //----------------Plot Virtual---------------------//
-
-                image= cv::imread("campo.png",cv::IMREAD_COLOR);
+/*
+               image= cv::imread("campo.png",cv::IMREAD_COLOR);
                 //Marcações(detalhe)
                 rectangle(image,Point(((-0.75)+0.75)*400,(-0.35+0.65)*400),Point(((-0.60)+0.75)*400,(+0.35+0.65)*400),Scalar(255,255,255),2);
                 rectangle(image,Point(((+0.60)+0.75)*400,(-0.35+0.65)*400),Point(((0.75)+0.75)*400,(+0.35+0.65)*400),Scalar(255,255,255),2);
@@ -145,12 +145,14 @@ int main(int argc, char *argv[]){
 
                 }
                 arrowedLine(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),Point(((estrategia.resultante->at(0))+0.75)*400,(-(estrategia.resultante->at(1))+0.65)*400),Scalar(0,255,255),2,5,0,0.3);
-                circle(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),0.2*400,Scalar(255,100,125),2);
+                circle(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),0.15*400,Scalar(255,100,125),2);
+                circle(image,Point(((*blue)[1].x()+0.75)*400,(-(*blue)[1].y()+0.65)*400),0.1*400,Scalar(55,100,255),2);
+*/
 
 
 /*
 
-                //RRT plot
+               //RRT plot
                 for(int node = 0; node < estrategia.rrt->GetNumNodes(); node++)
                 {
                     double x = estrategia.rrt->GetNodeState(node).x;
@@ -169,25 +171,27 @@ int main(int argc, char *argv[]){
 
                 }
                 circle(image,Point(((*blue)[0].x()+0.75)*400,(-(*blue)[0].y()+0.65)*400),0.4*400,Scalar(0,255,0),4);
-                vector<State> metas = estrategia.rrt->GetOptimaNodes();
-                for(int p = 0; p < (int)metas.size(); p++)
+                queue<State> metas = estrategia.rrt->GetOptimaNodes();
+                for(int p = 0; p < (int)metas.size()+1; p++)
                 {
-                    double x = metas[p].x;
-                    double y = metas[p].y;
+                    double x = metas.front().x;
+                    double y = metas.front().y;
+                    metas.pop();
 
                     circle(image,Point((x+0.75)*400,(-y+0.65)*400),4,Scalar(0,0,255),5);
 
-                }
-*/
+                }*/
 
-                imshow( "Plot Virtual", image );
-                waitKey(1);
+
+
+               // imshow( "Plot Virtual", image );
+               // waitKey(1);
             }
         }
 
     }
 
-    destroyAllWindows();
+    //destroyAllWindows();
 
 
     return 0;
