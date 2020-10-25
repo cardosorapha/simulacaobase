@@ -44,18 +44,18 @@ int main(int argc, char *argv[]){
     string IP;
     string vision;
     string command;
-    string time;
+    string campo;
 
     if(argc == 5){ // se existir entrada via terminal
         IP = argv[1];
         vision = argv[2];
         command = argv[3];
-        time = argv[4];
+        campo = argv[4];
     }else{         //se não existir executa os valores abaixo
         IP = "127.0.0.1";
         vision = "10020";
         command = "20011";
-        time = "azul";
+        campo = "amarelo";
     }
 
     stringstream aux(vision);
@@ -68,12 +68,12 @@ int main(int argc, char *argv[]){
 
     bool my_robots_are_yellow;
 
-    if (time == "azul"){
+    if (campo == "azul"){
         my_robots_are_yellow = false;
-    }else if (time == "amarelo"){
+    }else if (campo == "amarelo"){
             my_robots_are_yellow = true;
     }else{
-        printf("ERRO ESCOLHA DE TIME");
+        printf("ERRO ESCOLHA DE campo");
         exit(EXIT_FAILURE);
     }
 
