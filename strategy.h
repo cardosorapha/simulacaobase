@@ -89,6 +89,7 @@ class Strategy {
     void atacante1(fira_message::Robot rb, double xbola, double ybola, int id);
     void calc_repulsao2(fira_message::Robot rb,double px,double py,double F[]);
     void vaiPara_diodo(fira_message::Robot rb,double px, double py, int id);
+
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda

@@ -111,9 +111,16 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
+
     goleiro_petersson(b0,ball,0);
     zagueiro3(b1,ball.x(),ball.y(),1);
     atacante1(b2,ball.x(),ball.y(),2);
+
+    //vector <double> destino = {ball.x(),ball.y()};
+
+    //goleiro(b0,destino[0],destino[1],0);
+    //zagueiro3(b1,destino[0],destino[1],1);
+    //vaiPara_desviando(b2,destino[0],destino[1],2);
 
     cinematica_azul();
 }
@@ -262,7 +269,7 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 {
     double  Vaux = 0;
-    double  k_lin = 4;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
+    double  k_lin = 3;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
     double  V_max = Vmax;       //constante limitante da tangente hiperbólica
     double  v_min = 0.5;  	 //módulo da velocidade linear mínima permitida Rapha colocou 0.03
     double  ang_grande = 30; //para ângulos maiores que esse valor o sistema da prioridade ao W, reduzindo o V
