@@ -6,10 +6,10 @@
 #include "net/grSim_client.h"
 #include "util/timer.h"
 
-#include "pb/command.pb.h"
-#include "pb/common.pb.h"
-#include "pb/packet.pb.h"
-#include "pb/replacement.pb.h"
+#include "net/pb/command.pb.h"
+#include "net/pb/common.pb.h"
+#include "net/pb/packet.pb.h"
+#include "net/pb/replacement.pb.h"
 
 struct ang_err
 {
@@ -88,7 +88,7 @@ class Strategy {
     void zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id);
     void atacante1(fira_message::Robot rb, double xbola, double ybola, int id);
     void calc_repulsao2(fira_message::Robot rb,double px,double py,double F[]);
-
+    void vaiPara_diodo(fira_message::Robot rb,double px, double py, int id);
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
