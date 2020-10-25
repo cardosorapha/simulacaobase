@@ -1,4 +1,5 @@
 #include "strategy.h"
+#include "GrafoRRT.h"
 
 Strategy::Strategy(bool time)
 {
@@ -977,3 +978,17 @@ void Strategy::atacante1(fira_message::Robot rb, double px, double py, int id){
     }
 
 }
+
+void Strategy::vaiPara_diodo(fira_message::Robot rb,double px, double py, int id){
+    if (lado > 0){
+        if (rb.x() > px){
+            vaiPara(rb,px,py,id);
+        }else{
+            State inicio(rb.x(),rb.y(),rb.orientation());
+            State fim(px,py,rb.orientation());
+            rrt_graph rrt(inicio,fim);
+
+        }
+    }
+}
+
