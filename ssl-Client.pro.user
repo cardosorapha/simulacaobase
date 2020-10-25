@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.12.2, 2020-10-25T17:16:16. -->
+<!-- Written by QtCreator 4.12.2, 2020-10-25T17:57:08. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -132,8 +132,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
     <value type="bool">false</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client-zerado</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/build-ssl-Client-Desktop_Qt_5_15_0_GCC_64bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client-zerado</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -306,8 +306,9 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client-zerado/ssl-Client.pro</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client-zerado/ssl-Client.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">ssl-Client2</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client/ssl-Client.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client/ssl-Client.pro</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
@@ -318,7 +319,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client-zerado</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/rapha/Documents/GPRUFS/Simulador/firasim/fira-client/ssl-Client</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>
