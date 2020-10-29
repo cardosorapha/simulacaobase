@@ -139,7 +139,37 @@ void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, co
 
     goleiro(blue[0],ball.x(), ball.y(),0);
 
-    zagueiro_cone(blue,yellow, ball,1);
+   /* double dist = sqrt(pow(blue[1].x()-ball.x(),2.0)+pow(blue[1].y()-ball.y(),2.0));
+    double dist_2 = sqrt(pow(blue[2].x()-ball.x(),2.0)+pow(blue[2].y()-ball.y(),2.0));
+
+    if(ball.x()>0 && dist_2<dist)
+    {
+        zagueiro_cone(blue,yellow, ball,1);
+
+        actacante_coneLaam(blue,yellow,ball,2);
+    }else if(dist_2>dist)
+    {
+        zagueiro_cone(blue,yellow, ball,2);
+
+        actacante_coneLaam(blue,yellow,ball,1);
+    }else if(ball.x()<0)
+    {
+        zagueiro_cone(blue,yellow, ball,1);
+        zagueiro_cone(blue,yellow, ball,2);
+
+
+    }else {
+
+
+        zagueiro_cone(blue,yellow, ball,1);
+
+        actacante_coneLaam(blue,yellow,ball,2);
+
+    }*/
+
+    actacante_coneLaam(blue,yellow,ball,2);
+
+
 
 
     if(7 == 3){
@@ -1354,8 +1384,144 @@ double Strategy::irponto_angular(fira_message::Robot robot, double x, double y)
     return W;
 }
 
-void Strategy::actacante_cone(Team blue, Team yellow, fira_message::Ball ball, int id)
+//Atacante de Lázaro e cone
+void Strategy::actacante_coneLaam(Team blue, Team yellow, fira_message::Ball ball, int id)
 {
+
+    double alpha = M_PI/8;
+    double meioGolx = 0.75;
+    double beta = atan2(blue[id].x() - meioGolx,blue[id].y());
+    int K = round(beta/alpha);
+    double gain;
+
+    if(K<2)
+        gain = 0.25;
+    else if(K>=2 && K <= 3)
+        gain = 0.15;
+    else if(K>3 && K < 5)
+        gain = 0.30;
+    else if(K>=5 && K < 7)
+        gain = 0.15;
+    else
+        gain = 0.25;
+
+
+    delete componentes_2;
+    componentes_2 = new vector<pair<double,double>>();
+    delete resultante_2;
+    resultante_2 = new vector<double>();
+
+    //Determinação da origem do vetor resultante
+    resultante_2->push_back(blue[id].x());
+    resultante_2->push_back(blue[id].y());
+
+
+    delete name_vectors;
+    name_vectors = new vector<string>();
+
+    //distância atacante-bola
+    double dist =  sqrt(pow(ball.x()-blue[id].x(),2.0)+pow( ball.y()-blue[id].y(),2.0));
+
+    double componenteX;
+    double componenteY;
+
+    double k = dist;
+    if(dist < 0.05)
+        k  = 0.05;
+
+    //Componentes do Vetor ditreção ToBall
+    componenteX = blue[id].x() -  k*sin(atan2((blue[id].x() - ball.x()),(blue[id].y() - ball.y())));
+    componenteY = blue[id].y() -  k*cos(atan2((blue[id].x() - ball.x()),(blue[id].y() - ball.y())));
+    componentes_2->push_back(make_pair(componenteX,componenteY));
+    name_vectors->push_back("ToBall");
+
+
+    (*resultante_2)[0]+=-k*sin(atan2((blue[id].x() - ball.x()),(blue[id].y() - ball.y())));
+    (*resultante_2)[1]+=-k*cos(atan2((blue[id].x() - ball.x()),(blue[id].y() - ball.y())));
+
+
+    if(dist < 0.08 && (ball.x() >= blue[id].x()))
+    {
+        //Componentes do Vetor direção ToGoal
+        componenteX = blue[id].x() -  gain*sin(beta);
+        componenteY = blue[id].y() -  gain*cos(beta);
+        componentes_2->push_back(make_pair(componenteX,componenteY));
+
+        (*resultante_2)[0]+=-gain*sin(beta);
+        (*resultante_2)[1]+=-gain*cos(beta);
+
+        name_vectors->push_back("ToGoal");
+
+    }
+
+    if((ball.x() < 0.5 && ball.y() < -0.20)&& (blue[id].y() > ball.y())&&(blue[id].x() < ball.x())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+    {
+        //Vetor de corrção
+        componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+        componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+        componentes_2->push_back(make_pair(blue[id].x() + componenteX,blue[id].y() + componenteY));
+
+        (*resultante_2)[0]+=componenteX;
+        (*resultante_2)[1]+=componenteY;
+        name_vectors->push_back("Err");
+
+    }
+
+    if((ball.x() < 0.5 && ball.y() > 0.20)&&(blue[id].y() < ball.y())&&(blue[id].x() < ball.x())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+    {
+        //Vetor de corrção
+        componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+        componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+        componentes_2->push_back(make_pair(blue[id].x() + componenteX,blue[id].y() + componenteY));
+
+        (*resultante_2)[0]+=componenteX;
+        (*resultante_2)[1]+=componenteY;
+        name_vectors->push_back("Err");
+
+    }
+
+    //Melhorar essa parte para o robô ir para trás de bola e agir ofensivamente
+    if((ball.x() < blue[id].x()))
+    {
+        int a = 0;
+        int b = 1;
+        //Consideração do vetor de predição
+        if(predictedBall.x < ball.x() && (abs(ball.y()-blue[id].y())>0.1))
+            a = 1;
+        if(dist > 0.35)
+            b = 0;
+
+        double repulsivoX;
+        double repulsivoY;
+
+        if(ball.y()-blue[id].y()>0)
+        {
+            repulsivoX = 0.1*sin(M_PI*0.25);
+            repulsivoY = 0.1*cos(M_PI*0.25);
+        }else
+        {
+            repulsivoX = 0.1*sin(M_PI*0.75);
+            repulsivoY = 0.1*cos(M_PI*0.75);
+        }
+
+        //Componentes do Vetor direção
+        double angle = atan2(ball.x()-predictedBall.x,ball.y()-predictedBall.y);
+        componenteX = /*blue[id].x()*/ -  a*0.1*sin(angle) - b*repulsivoX;
+        componenteY = /*blue[id].y()*/ -  a*0.1*cos(angle) - b*repulsivoY;
+        componentes_2->push_back(make_pair(blue[id].x() + componenteX,blue[id].y() + componenteY));
+
+        (*resultante_2)[0]+= componenteX;
+        (*resultante_2)[1]+= componenteY;
+
+        name_vectors->push_back("Recuo");
+
+    }
+
+
+    if(ball.x()<=0)
+        vaiPara_desviando(blue[id],0,(*resultante_2)[1],id);
+    else
+        vaiPara_desviando(blue[id],(*resultante_2)[0],(*resultante_2)[1],id);
 
 }
 

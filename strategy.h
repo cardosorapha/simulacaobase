@@ -87,6 +87,13 @@ class Strategy {
     vector<double>* resultante = NULL;
     vector<pair<double,double>>* componentes = NULL;
 
+    //Atributos para atacante_coneLaam
+    vector<pair<double,double>>* componentes_2 = NULL;
+    vector<double>* resultante_2 = NULL;
+    vector<string>* name_vectors = NULL;
+
+
+
 
     int qtdRobos, vrMax;
     double Vmax, Wmax;
@@ -138,7 +145,7 @@ class Strategy {
     void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro_cone(Team blue, Team yellow,fira_message::Ball ball,int id);
     void zagueiro2(fira_message::Robot, double, double, int);
-    void actacante_cone(Team blue, Team yellow,fira_message::Ball ball,int id);
+    void actacante_coneLaam(Team blue, Team yellow,fira_message::Ball ball,int id);
 
   private:
     double L; //Distância entre roda e centro
