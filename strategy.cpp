@@ -138,38 +138,56 @@ void Strategy::strategy_blue(Team blue, Team yellow, fira_message::Ball ball, co
     destino[1] = Ybola;
 
     goleiro(blue[0],ball.x(), ball.y(),0);
-
-   /* double dist = sqrt(pow(blue[1].x()-ball.x(),2.0)+pow(blue[1].y()-ball.y(),2.0));
+/*
+    double dist   = sqrt(pow(blue[1].x()-ball.x(),2.0)+pow(blue[1].y()-ball.y(),2.0));
     double dist_2 = sqrt(pow(blue[2].x()-ball.x(),2.0)+pow(blue[2].y()-ball.y(),2.0));
+
 
     if(ball.x()>0 && dist_2<dist)
     {
         zagueiro_cone(blue,yellow, ball,1);
-
         actacante_coneLaam(blue,yellow,ball,2);
-    }else if(dist_2>dist)
+
+        cout << "Zagueiro: " << 1 << endl;
+        cout << "Atacante: " << 2 << endl;
+
+
+    }else if(ball.x()>0 && dist_2>dist)
     {
         zagueiro_cone(blue,yellow, ball,2);
-
         actacante_coneLaam(blue,yellow,ball,1);
-    }else if(ball.x()<0)
+
+        cout << "Zagueiro: " << 2 << endl;
+        cout << "Atacante: " << 1 << endl;
+
+    }else if(ball.x()<0 && dist_2>dist)
     {
         zagueiro_cone(blue,yellow, ball,1);
+        actacante_coneLaam(blue,yellow, ball,2);
+
+        cout << "Zagueiro: " << 1 << endl;
+        cout << "Atacante: " << 2 << endl;
+
+    }else if(ball.x()<0 && dist_2<dist) {
+
+
         zagueiro_cone(blue,yellow, ball,2);
+        actacante_coneLaam(blue,yellow,ball,1);
 
+        cout << "Zagueiro: " << 2 << endl;
+        cout << "Atacante: " << 1 << endl;
 
-    }else {
+    }else
+    {
+        zagueiro_cone(blue,yellow, ball,2);
+        actacante_coneLaam(blue,yellow,ball,1);
 
+        cout << "Zagueiro: " << 2 << endl;
+        cout << "Atacante: " << 1 << endl;
+    }
 
-        zagueiro_cone(blue,yellow, ball,1);
-
-        actacante_coneLaam(blue,yellow,ball,2);
-
-    }*/
-
+*/
     actacante_coneLaam(blue,yellow,ball,2);
-
-
 
 
     if(7 == 3){
@@ -675,7 +693,7 @@ void Strategy::calc_repulsao(fira_message::Robot rb, double F[]){
 
      double dist_adversario;
 
-     for(int i = 0 ; i < 5 ; i++){
+     for(int i = 3 ; i < 5 ; i++){
 
          dist_adversario = sqrt(pow((rb.x() - pos_robos[i][0]),2) + pow((rb.y() - pos_robos[i][1]),2));
 
@@ -1440,7 +1458,7 @@ void Strategy::actacante_coneLaam(Team blue, Team yellow, fira_message::Ball bal
     (*resultante_2)[1]+=-k*cos(atan2((blue[id].x() - ball.x()),(blue[id].y() - ball.y())));
 
 
-    if(dist < 0.08 && (ball.x() >= blue[id].x()))
+    if((dist < 0.08 && (ball.x() >= blue[id].x()))/* || (ball.x() > 0.5 && abs(ball.y())<0.2 && dist < 0.05)*/)
     {
         //Componentes do Vetor direção ToGoal
         componenteX = blue[id].x() -  gain*sin(beta);
@@ -1517,11 +1535,18 @@ void Strategy::actacante_coneLaam(Team blue, Team yellow, fira_message::Ball bal
 
     }
 
-
-    if(ball.x()<=0)
-        vaiPara_desviando(blue[id],0,(*resultante_2)[1],id);
+    if(ball.x()==0)
+    {
+        vaiPara(blue[id],ball.x(),ball.y(),id);
+    }
     else
-        vaiPara_desviando(blue[id],(*resultante_2)[0],(*resultante_2)[1],id);
+    {
+        if(ball.x()<=0)
+            vaiPara_desviando(blue[id],0,(*resultante_2)[1],id);
+        else
+            vaiPara_desviando(blue[id],(*resultante_2)[0],(*resultante_2)[1],id);
+    }
+
 
 }
 
