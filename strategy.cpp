@@ -928,23 +928,42 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
 }
 
 void Strategy::zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id){
-   double x_penalti =  0.4;
+
+    double x_penalti =  0.4;
    double x_meio_de_campo = 0.0;
    double x_radius = 0.2;
    double y_top = 0.35;
-   if(xbola >= x_penalti){
-       vaiPara_desviando(rb,x_meio_de_campo,ybola,id);
-   }else if(xbola >= x_meio_de_campo){
-       vaiPara_desviando(rb,-x_radius,ybola,id);
-   }else if(xbola >= -x_penalti){
-       vaiPara_desviando(rb,xbola,ybola,id);
-   }else if(ybola >= y_top && rb.y() <= ybola){
-       vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
-   }else if(ybola <= -y_top && rb.y() >= ybola){
-       vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
+
+   if (lado > 0){ //azul
+       if(xbola >= x_penalti){
+           vaiPara_desviando(rb,x_meio_de_campo,ybola,id);
+       }else if(xbola >= x_meio_de_campo){
+           vaiPara_desviando(rb,-x_radius,ybola,id);
+       }else if(xbola >= -x_penalti){
+           vaiPara_desviando(rb,xbola,ybola,id);
+       }else if(ybola >= y_top && rb.y() <= ybola){
+           vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
+       }else if(ybola <= -y_top && rb.y() >= ybola){
+           vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
+       }else{
+           vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
+       }
    }else{
-       vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
+       if(xbola <= -x_penalti){
+           vaiPara_desviando(rb,x_meio_de_campo,ybola,id);
+       }else if(xbola <= -x_meio_de_campo){
+           vaiPara_desviando(rb,x_radius,ybola,id);
+       }else if(xbola >= -x_penalti){
+           vaiPara_desviando(rb,xbola,ybola,id);
+       }else if(ybola >= y_top && rb.y() <= ybola){
+           vaiPara_desviando(rb,xbola+0.2,y_top+0.1,id);
+       }else if(ybola <= -y_top && rb.y() >= ybola){
+           vaiPara_desviando(rb,xbola+0.2,y_top+0.1,id);
+       }else{
+           vaiPara_desviando(rb,x_penalti + 0.1, 0.0,id);
+       }
    }
+
 }
 
 void Strategy::atacante1(fira_message::Robot rb, double px, double py, int id){
@@ -1192,7 +1211,7 @@ void Strategy::zagueiro_todos(Team time1, Team time2, fira_message::Ball ball, i
 
     double dist_2 = sqrt(pow(ball.x() - time1[id].x(),2.0)+pow( ball.y() - time1[id].y(),2.0));
 
-//if (lado > 0){
+if (lado > 0){
     if(ball.x() - time1[id].x() < 0)
     {
        v_of = ball.x() - time1[id].x();
@@ -1288,8 +1307,7 @@ void Strategy::zagueiro_todos(Team time1, Team time2, fira_message::Ball ball, i
 
     }
 
-}
-/*else{
+}else{
 
     if(ball.x() - time1[id].x() > 0)
     {
@@ -1385,5 +1403,5 @@ void Strategy::zagueiro_todos(Team time1, Team time2, fira_message::Ball ball, i
 
 
     }
-}*/
-//}
+}
+}
