@@ -108,30 +108,29 @@ void Strategy::predict_ball(fira_message::Ball ball)
 }
 
 void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                             fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                              fira_message::Ball ball, const fira_message::Field & field)
 {
-
+    Team blue(b0,b1,b2);
+    Team yellow(y0,y1,y2);
 
     goleiro_petersson(b0,ball,0);
-    zagueiro3(b1,ball.x(),ball.y(),1);
-    atacante1(b2,ball.x(),ball.y(),2);
-
-    //vector <double> destino = {ball.x(),ball.y()};
-
-    //goleiro(b0,destino[0],destino[1],0);
-    //zagueiro3(b1,destino[0],destino[1],1);
-    //vaiPara_desviando(b2,destino[0],destino[1],2);
-
+    zagueiro_todos(blue,yellow,ball,1);
+    atacante_todos(b2,ball,2);
     cinematica_azul();
 }
 
-void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
-                     fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field)
+void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                               fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                               fira_message::Ball ball, const fira_message::Field & field)
 {
-    goleiro_petersson(y0,ball,0);
-    zagueiro3(y1,ball.x(),ball.y(),1);
-    atacante1(y2,ball.x(),ball.y(),2);
+    Team blue(b0,b1,b2);
+    Team yellow(y0,y1,y2);
 
+    goleiro_petersson(y0,ball,0);
+    zagueiro_todos(yellow,blue,ball,1);
+    //atacante1(y2,ball.x(),ball.y(),2);
+    atacante_todos(y2,ball,2);
     cinematica_amarelo();
     //TODO
 }
@@ -269,7 +268,7 @@ double Strategy::controleAngular(double fi2) // função testada. lembrete : (si
 double Strategy::controleLinear(fira_message::Robot rb,double px, double py)
 {
     double  Vaux = 0;
-    double  k_lin = 3;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
+    double  k_lin = 4;   //constante de contração da tangente hiperbólica Rapha colocou 0.8
     double  V_max = Vmax;       //constante limitante da tangente hiperbólica
     double  v_min = 0.5;  	 //módulo da velocidade linear mínima permitida Rapha colocou 0.03
     double  ang_grande = 30; //para ângulos maiores que esse valor o sistema da prioridade ao W, reduzindo o V
@@ -556,7 +555,7 @@ void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int 
 
     Strategy::saturacao(new_pos);
 
-    vaiParaDinamico(rb,new_pos[0],new_pos[1],id);
+    vaiPara(rb,new_pos[0],new_pos[1],id);
 
     filtro(VW[id][0],id);
 }
@@ -999,3 +998,392 @@ void Strategy::vaiPara_diodo(fira_message::Robot rb,double px, double py, int id
     }
 }
 
+
+//Atacante de Lázaro e cone
+void Strategy::atacante_todos(fira_message::Robot rb,fira_message::Ball ball, int id)
+{
+
+    double alpha = M_PI/8;
+    double meioGolx = -0.75*lado;
+    double beta = atan2(rb.x() - meioGolx , rb.y());
+    int K = round(beta/alpha);
+    double gain;
+  //  double resultante_2 = {0,0};
+
+    if(K<2)
+        gain = 0.25;
+    else if(K>=2 && K <= 3)
+        gain = 0.15;
+    else if(K>3 && K < 5)
+        gain = 0.30;
+    else if(K>=5 && K < 7)
+        gain = 0.15;
+    else
+        gain = 0.25;
+
+    delete resultante_2;
+    resultante_2 = new vector<double>();
+
+    //Determinação da origem do vetor resultante
+    resultante_2->push_back(rb.x());
+    resultante_2->push_back(rb.y());
+
+    //distância atacante-bola
+    double dist =  sqrt(pow(ball.x()-rb.x(),2.0)+pow( ball.y()-rb.y(),2.0));
+
+    double componenteX;
+    double componenteY;
+
+    double k = dist;
+    if(dist < 0.05)
+        k  = 0.05;
+
+    (*resultante_2)[0]+=-k*sin(atan2((rb.x() - ball.x()),(rb.y() - ball.y())));
+    (*resultante_2)[1]+=-k*cos(atan2((rb.x() - ball.x()),(rb.y() - ball.y())));
+
+    if(lado > 0){//azul
+        if((dist < 0.08) && (ball.x() >= rb.x())){
+            (*resultante_2)[0]+=-gain*sin(beta);
+            (*resultante_2)[1]+=-gain*cos(beta);
+        }
+        if((ball.x() < 0.5 && ball.y() < -0.20)&& (rb.y() > ball.y())&&(rb.x() < ball.x())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+        {
+            //Vetor de corrção
+            componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+            componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+
+            (*resultante_2)[0]+=componenteX;
+            (*resultante_2)[1]+=componenteY;
+        }
+
+        if((ball.x() < 0.5 && ball.y() > 0.20)&&(rb.y() < ball.y())&&(rb.x() < ball.x())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+        {
+            //Vetor de corrção
+            componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+            componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+
+            (*resultante_2)[0]+=componenteX;
+            (*resultante_2)[1]+=componenteY;
+        }
+
+        if((ball.x() < rb.x()))
+        {
+            int a = 0;
+            int b = 1;
+            //Consideração do vetor de predição
+            if(predictedBall.x < ball.x() && (abs(ball.y()-rb.y()) > 0.1))
+                a = 1;
+            if(dist > 0.35)
+                b = 0;
+
+            double repulsivoX;
+            double repulsivoY;
+
+            if(ball.y() - rb.y()>0)
+            {
+                repulsivoX = 0.1*sin(M_PI*0.25);
+                repulsivoY = 0.1*cos(M_PI*0.25);
+            }else
+            {
+                repulsivoX = 0.1*sin(M_PI*0.75);
+                repulsivoY = 0.1*cos(M_PI*0.75);
+            }
+
+            //Componentes do Vetor direção
+            double angle = atan2(ball.x()-predictedBall.x,ball.y()-predictedBall.y);
+            componenteX = /*blue[id].x()*/ -  a*0.1*sin(angle) - b*repulsivoX;
+            componenteY = /*blue[id].y()*/ -  a*0.1*cos(angle) - b*repulsivoY;
+
+            (*resultante_2)[0]+= componenteX;
+            (*resultante_2)[1]+= componenteY;
+        }
+
+        if(ball.x()==0)
+        {
+            vaiPara(rb,ball.x(),ball.y(),id);
+        }
+        else
+        {
+            if(ball.x()<=0)
+                vaiPara_desviando(rb,0,(*resultante_2)[1],id);
+            else
+                vaiPara_desviando(rb,(*resultante_2)[0],(*resultante_2)[1],id);
+        }
+    }else{
+        if((dist < 0.08) && (ball.x() <= rb.x())){
+            (*resultante_2)[0]+=-gain*sin(beta);
+            (*resultante_2)[1]+=-gain*cos(beta);
+        }
+        if((ball.x() > -0.5 && ball.y() < -0.20)&& (rb.y() > ball.y())&&(rb.x() > ball.x())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+        {
+            //Vetor de corrção
+            componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+            componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+
+            (*resultante_2)[0]+=componenteX;
+            (*resultante_2)[1]+=componenteY;
+        }
+
+        if((ball.x() > -0.5 && ball.y() > 0.20)&&(rb.y() < ball.y())&&(rb.x() > ball.x())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+        {
+            //Vetor de corrção
+            componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+            componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)+M_PI);
+
+            (*resultante_2)[0]+=componenteX;
+            (*resultante_2)[1]+=componenteY;
+        }
+
+        if((ball.x() > rb.x()))
+        {
+            int a = 0;
+            int b = 1;
+            //Consideração do vetor de predição
+            if(predictedBall.x > ball.x() && (abs(ball.y()-rb.y()) > 0.1))
+                a = 1;
+            if(dist > 0.35)
+                b = 0;
+
+            double repulsivoX;
+            double repulsivoY;
+
+            if(ball.y() - rb.y()>0)
+            {
+                repulsivoX = 0.1*sin(M_PI*0.25);
+                repulsivoY = 0.1*cos(M_PI*0.25);
+            }else
+            {
+                repulsivoX = 0.1*sin(M_PI*0.75);
+                repulsivoY = 0.1*cos(M_PI*0.75);
+            }
+
+            //Componentes do Vetor direção
+            double angle = atan2(ball.x()-predictedBall.x,ball.y()-predictedBall.y);
+            componenteX = -a*0.1*sin(angle) - b*repulsivoX;
+            componenteY = -a*0.1*cos(angle) - b*repulsivoY;
+
+            (*resultante_2)[0]+= componenteX;
+            (*resultante_2)[1]+= componenteY;
+        }
+
+        if(ball.x()==0)
+        {
+            vaiPara(rb,ball.x(),ball.y(),id);
+        }
+        else
+        {
+            if(ball.x()>=0)
+                vaiPara_desviando(rb,0,(*resultante_2)[1],id);
+            else
+                vaiPara_desviando(rb,(*resultante_2)[0],(*resultante_2)[1],id);
+        }
+    }
+}
+
+//Zagueiro de cone com a ideia de predição potencial de antecipação usando uma espécie de "Motor Schema"
+void Strategy::zagueiro_todos(Team time1, Team time2, fira_message::Ball ball, int id)
+{
+    double raio = 0.08;
+    double angle;
+    double dist;
+    double gain = 3*raio;  //Ganho inicial, dependência da região do campo
+    double v_of;
+    int k = 0;
+
+    double dist_2 = sqrt(pow(ball.x() - time1[id].x(),2.0)+pow( ball.y() - time1[id].y(),2.0));
+
+//if (lado > 0){
+    if(ball.x() - time1[id].x() < 0)
+    {
+       v_of = ball.x() - time1[id].x();
+       k = 1;
+    }
+    else
+    {
+        v_of = 0;
+        k = 0;
+    }
+
+    //Vetor que aponta na direção do ponto predito da posição da bola com um fator "v_of"
+    if(dist_2 > 0.2 && k == 1){
+        angle = atan2(time1[id].x() - (predictedBall.x + v_of),time1[id].y() - predictedBall.y);
+    }else{
+        angle = atan2(time1[id].x() - ball.x(),time1[id].y() - ball.y());
+    }
+
+    double componenteX = time1[id].x() -  gain*sin(angle);
+    double componenteY = time1[id].y() -  gain*cos(angle);
+
+    delete resultante;
+    resultante = new vector<double>();
+
+    //Usando vetor do zaguairo ao ponto predito, para composição
+    resultante->push_back(componenteX);
+    resultante->push_back(componenteY);
+
+    //Usando o vetor de predição com origem no zagueiro, para composição
+
+    (*resultante)[0]+=-k*(-predictedBall.x + ball.x());
+    (*resultante)[1]+=-k*(-predictedBall.y + ball.y());
+
+    //Repulsão da área do goleiro
+    if(time1[id].x()<-0.40 && (time1[id].y()<0.3 && time1[id].y()>-0.30) && ball.x()>-0.6)
+    {
+        (*resultante)[0]+=-2*(-0.40-(time1[id].x()))*sin(atan2(time1[id].x() - ball.x(),time1[id].y() - ball.y()));
+        (*resultante)[1]+=-2*(-0.40-(time1[id].x()))*cos(atan2(time1[id].x() - ball.x(),time1[id].y() - ball.y()));
+    }
+    //Repulsão da bola no retorno do zagueiro
+    if(k==1 && dist_2<0.2)
+    {
+        (*resultante)[0]+=-gain*sin(M_PI/2);
+        (*resultante)[1]+=-gain*cos(M_PI/2);
+    }
+
+    double min_dist = 999;
+
+    for(int i = 0;i < 3;i++)
+    {
+        angle = atan2(time2[i].x() - ball.x(),time2[i].y() - ball.y());
+        dist = sqrt(pow(ball.x() - time2[i].x(),2.0)+pow( ball.y() - time2[i].y(),2.0));
+
+        if(dist<0.15 && dist > 0.1)
+            gain = 4*(0.15 - dist);
+        else if(dist < 0.1)
+            gain = 0.2;
+        else
+            gain = 0.0;
+
+        if(min_dist>dist)
+            min_dist = dist;
+
+        componenteX = time1[id].x()-gain*sin(angle);
+        componenteY = time1[id].y()-gain*cos(angle);
+
+        //Usando o vetor Adversário-bola com um ganho "gain", para composição
+        (*resultante)[0]+=-gain*sin(angle);
+        (*resultante)[1]+=-gain*cos(angle);
+
+    }
+
+
+    if(((k==0 && dist_2 < 0.15)||((k==0 && dist_2/min_dist < 1.3)&&time1[id].x()<0)||((k==0 && dist_2/min_dist < 0.6)&&time1[id].x()>=0))
+            &&!(time1[id].x()<-0.5 && (time1[id].y()<0.35 && time1[id].y()>-0.35)))
+    {
+        vaiPara_desviando(time1[id],ball.x(),ball.y(),id);
+    }else{
+        if(time1[id].x()<-0.50 && (time1[id].y()<0.35 && time1[id].y()>-0.35))
+        {
+                vaiPara_desviando(time1[id],-0.55,(*resultante)[1],id);
+        }
+        else
+        {
+            if(ball.x()<-0.5 && (ball.y()<0.3 && ball.y()>-0.30) && k==1)
+                vaiPara_desviando(time1[id],-0.4,0.0,id);
+            else if(ball.x()>0)
+                vaiPara_desviando(time1[id],0.0,(*resultante)[1],id);
+            else
+                vaiPara_desviando(time1[id],(*resultante)[0],(*resultante)[1],id);
+        }
+
+
+    }
+
+}
+/*else{
+
+    if(ball.x() - time1[id].x() > 0)
+    {
+       v_of = ball.x() - time1[id].x();
+       k = 1;
+    }
+    else
+    {
+        v_of = 0;
+        k = 0;
+    }
+
+    //Vetor que aponta na direção do ponto predito da posição da bola com um fator "v_of"
+    if(dist_2 > 0.2 && k == 1){
+        angle = atan2(time1[id].x() - (predictedBall.x + v_of),time1[id].y() - predictedBall.y);
+    }else{
+        angle = atan2(time1[id].x() - ball.x(),time1[id].y() - ball.y());
+    }
+
+    double componenteX = time1[id].x() -  gain*sin(angle);
+    double componenteY = time1[id].y() -  gain*cos(angle);
+
+    delete resultante;
+    resultante = new vector<double>();
+
+    //Usando vetor do zaguairo ao ponto predito, para composição
+    resultante->push_back(componenteX);
+    resultante->push_back(componenteY);
+
+    //Usando o vetor de predição com origem no zagueiro, para composição
+
+    (*resultante)[0]+=-k*(-predictedBall.x + ball.x());
+    (*resultante)[1]+=-k*(-predictedBall.y + ball.y());
+
+    //Repulsão da área do goleiro
+    if(time1[id].x() > 0.40 && (time1[id].y()<0.3 && time1[id].y()>-0.30) && ball.x() < 0.6)
+    {
+        (*resultante)[0]+=-2*((time1[id].x())-0.40)*sin(atan2(time1[id].x() - ball.x(),time1[id].y() - ball.y()));
+        (*resultante)[1]+=-2*((time1[id].x())-0.40)*cos(atan2(time1[id].x() - ball.x(),time1[id].y() - ball.y()));
+    }
+    //Repulsão da bola no retorno do zagueiro
+    if(k==1 && dist_2 < 0.2)
+    {
+        (*resultante)[0]+=-gain*sin(M_PI/2);
+        (*resultante)[1]+=-gain*cos(M_PI/2);
+    }
+
+    double min_dist = 999;
+
+    for(int i = 0;i < 3;i++)
+    {
+        angle = atan2(time2[i].x() - ball.x(),time2[i].y() - ball.y());
+        dist = sqrt(pow(ball.x() - time2[i].x(),2.0)+pow( ball.y() - time2[i].y(),2.0));
+
+        if(dist<0.15 && dist > 0.1)
+            gain = 4*(0.15 - dist);
+        else if(dist < 0.1)
+            gain = 0.2;
+        else
+            gain = 0.0;
+
+        if(min_dist>dist)
+            min_dist = dist;
+
+        componenteX = time1[id].x()-gain*sin(angle);
+        componenteY = time1[id].y()-gain*cos(angle);
+
+        //Usando o vetor Adversário-bola com um ganho "gain", para composição
+        (*resultante)[0]+=-gain*sin(angle);
+        (*resultante)[1]+=-gain*cos(angle);
+
+    }
+
+
+    if(((k==0 && dist_2 < 0.15)||((k==0 && dist_2/min_dist < 1.3)&&time1[id].x()>0)||((k==0 && dist_2/min_dist < 0.6)&&time1[id].x()<=0))
+            &&!(time1[id].x()>0.5 && (time1[id].y()<0.35 && time1[id].y()>-0.35)))
+    {
+        vaiPara_desviando(time1[id],ball.x(),ball.y(),id);
+    }else{
+        if(time1[id].x()>0.50 && (time1[id].y()<0.35 && time1[id].y()>-0.35))
+        {
+                vaiPara_desviando(time1[id],0.55,(*resultante)[1],id);
+        }
+        else
+        {
+            if(ball.x() > 0.5 && (ball.y()<0.3 && ball.y()>-0.30) && k==1)
+                vaiPara_desviando(time1[id],0.4,0.0,id);
+            else if(ball.x()<0)
+                vaiPara_desviando(time1[id],0.0,(*resultante)[1],id);
+            else
+                vaiPara_desviando(time1[id],(*resultante)[0],(*resultante)[1],id);
+        }
+
+
+    }
+}*/
+//}
