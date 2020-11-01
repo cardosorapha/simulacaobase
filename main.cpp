@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
         command = argv[3];
         campo = argv[4];
     }else{         //se não existir executa os valores abaixo
-        IP = "127.0.0.1";
+        IP = "224.0.0.1";
         vision = "10020";
         command = "20011";
         campo = "amarelo";
@@ -67,11 +67,16 @@ int main(int argc, char *argv[]){
     aux2 >> comando;
 
     bool my_robots_are_yellow;
-
+    bool ambos;
     if (campo == "azul"){
         my_robots_are_yellow = false;
+        ambos = false;
     }else if (campo == "amarelo"){
             my_robots_are_yellow = true;
+            ambos = false;
+    }else if (campo == "ambos"){
+            my_robots_are_yellow = true;
+            ambos = true;
     }else{
         printf("ERRO ESCOLHA DE campo");
         exit(EXIT_FAILURE);
@@ -81,11 +86,17 @@ int main(int argc, char *argv[]){
     RoboCupSSLClient visionClient(IP, visao);
     visionClient.open(false);
 
-    GrSim_Client commandClient(QString::fromStdString(IP), comando);
+    GrSim_Client commandClient("127.0.0.1", comando);
 
     fira_message::sim_to_ref::Environment packet;
 
     //inicialização da classe estratégia
+
+    //inicializa duas estrategias uma para cada time em caso de ambos os times serem utilizados
+    Strategy estrategia_amarela(my_robots_are_yellow);
+    Strategy estrategia_azul(!my_robots_are_yellow);
+
+    //inicializa estrategia azul ou amarela
     Strategy estrategia(my_robots_are_yellow);
 
     while(true) {
@@ -99,7 +110,14 @@ int main(int argc, char *argv[]){
                 int robots_yellow_n =  detection.robots_yellow_size();
                 //Ball info:
                 fira_message::Ball ball = detection.ball();
-                estrategia.predict_ball(ball);
+
+                if (ambos){
+                    estrategia_azul.predict_ball(ball);
+                    estrategia_amarela.predict_ball(ball);
+                }else{
+                    estrategia.predict_ball(ball);
+                }
+
                 //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
 
                 //printf("-[Geometry Data]-------\n");
@@ -120,17 +138,35 @@ int main(int argc, char *argv[]){
                 fira_message::Robot y1 = detection.robots_yellow(1);
                 fira_message::Robot y2 = detection.robots_yellow(2);
 
-                estrategia.atualiza_pos(b0,b1,b2,y0,y1,y2);
 
-                if(my_robots_are_yellow){
-                    estrategia.strategy_yellow(y0,y1,y2,ball,field);
+                if(ambos){
+                    estrategia_amarela.atualiza_pos(b0,b1,b2,y0,y1,y2);
+                    estrategia_azul.atualiza_pos(b0,b1,b2,y0,y1,y2);
+
+                    estrategia_amarela.strategy_yellow(y0,y1,y2,b0,b1,b2,ball,field);
+                    estrategia_azul.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
+
+                    //Enviando velocidades para os robos amarelos
+                    for(int i = 0;i < estrategia_amarela.qtdRobos;i++)
+                        commandClient.sendCommand(estrategia_amarela.vRL[i][1],estrategia_amarela.vRL[i][0],my_robots_are_yellow,i);
+
+                    //Enviando velocidades para os robos azuis
+                    for(int i = 0;i < estrategia_azul.qtdRobos;i++)
+                        commandClient.sendCommand(estrategia_azul.vRL[i][1],estrategia_azul.vRL[i][0],!my_robots_are_yellow,i);
+
                 }else{
-                    estrategia.strategy_blue(b0,b1,b2,ball,field);
-                }
+                    estrategia.atualiza_pos(b0,b1,b2,y0,y1,y2);
 
-                //Enviando velocidades para os robos
-                for(int i = 0;i < estrategia.qtdRobos;i++)
-                    commandClient.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],my_robots_are_yellow,i);
+                    if(my_robots_are_yellow){
+                        estrategia.strategy_yellow(y0,y1,y2,b0,b1,b2,ball,field);
+                    }else{
+                        estrategia.strategy_blue(b0,b1,b2,y0,y1,y2,ball,field);
+                    }
+                    //Enviando velocidades para os robos
+                    for(int i = 0;i < estrategia.qtdRobos;i++)
+                        commandClient.sendCommand(estrategia.vRL[i][1],estrategia.vRL[i][0],my_robots_are_yellow,i);
+
+                }
 
 
                 //Debug
