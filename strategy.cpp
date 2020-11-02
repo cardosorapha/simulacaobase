@@ -132,7 +132,8 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
     //zagueiro_todos(yellow,blue,ball,1);
     zagueiro2(y1,ball.x(),ball.y(),1);
     //atacante1(y2,ball.x(),ball.y(),2);
-    atacante_todos(y2,ball,2);
+    //atacante_todos(y2,ball,2);
+    vaiPara_desviando(y2,ball.x(),ball.y(),2);
     cinematica_amarelo();
     //TODO
 }
@@ -908,11 +909,11 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         }
         else if((xbola < x_meio_de_campo && ybola > (y_top - ala_deepth +0.1)))
         {   //Se a Bola estiver na zona "D"
-            vaiPara_desviando(rb,xbola,y_top - ala_deepth +0.1,id);
+            vaiPara_desviando(rb,predictedBall.x,y_top - ala_deepth +0.1,id);
         }
         else if((xbola < x_meio_de_campo) && ybola < (ala_deepth - y_top  -0.1))
         {    //Se a Bola estiver na zona "E"
-            vaiPara_desviando(rb,xbola,ala_deepth - y_top -0.1,id);
+            vaiPara_desviando(rb,predictedBall.x,ala_deepth - y_top -0.1,id);
         }
         else // se não estiver em nenhuma das regiôes
         {
@@ -955,11 +956,11 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         }
         else if((xbola > x_meio_de_campo && ybola > (y_top - ala_deepth +0.1)))
         {   //Se a Bola estiver na zona "D"
-            vaiPara_desviando(rb,xbola,y_top - ala_deepth +0.1,id);
+            vaiPara_desviando(rb,predictedBall.x,y_top - ala_deepth +0.1,id);
         }
         else if((xbola > x_meio_de_campo) && ybola < (ala_deepth - y_top  -0.1))
         {    //Se a Bola estiver na zona "E"
-            vaiPara_desviando(rb,xbola,ala_deepth - y_top -0.1,id);
+            vaiPara_desviando(rb,predictedBall.x,ala_deepth - y_top -0.1,id);
         }
         else // se não estiver em nenhuma das regiôes
         {
