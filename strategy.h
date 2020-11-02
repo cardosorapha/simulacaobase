@@ -26,12 +26,47 @@ struct ballPredPos
     double y;
 };
 
+class Team : public std::array<fira_message::Robot,6>
+{
+public:
+
+
+    // the constructors
+    Team() {}
+    Team(fira_message::Robot rb0, fira_message::Robot rb1, fira_message::Robot rb2)
+    {
+
+        (*this)[0] = rb0;
+        (*this)[1] = rb1;
+        (*this)[2] = rb2;
+
+    }
+    Team(fira_message::Robot rb0, fira_message::Robot rb1, fira_message::Robot rb2,
+         fira_message::Robot rb3, fira_message::Robot rb4, fira_message::Robot rb5)
+    {
+
+        (*this)[0] = rb0;
+        (*this)[1] = rb1;
+        (*this)[2] = rb2;
+        (*this)[3] = rb3;
+        (*this)[4] = rb4;
+        (*this)[5] = rb5;
+
+    }
+
+    //Destructors
+    ~Team(){}
+
+};
 
 class Strategy {
   public:
 
     Strategy(bool time);
     ~Strategy();
+
+    Team *blue = NULL;
+    Team *yellow = NULL;
 
     vector<ballPredPos> ballPredMemory; //Vetor de memória com posições passadas
     void predict_ball(fira_message::Ball ball);
@@ -44,11 +79,13 @@ class Strategy {
 
     int lado;
 
-    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2
-                      ,fira_message::Ball ball, const fira_message::Field & field);
+    void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                      fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
+                     ,fira_message::Ball ball, const fira_message::Field & field);
 
-    void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,
-                         fira_message::Robot y2, fira_message::Ball ball, const fira_message::Field & field);
+    void strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
+                         fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
+                         fira_message::Ball ball, const fira_message::Field & field);
 
     void girarHorario(double,int);
     void girarAntihorario(double,int);
@@ -89,6 +126,16 @@ class Strategy {
     void atacante1(fira_message::Robot rb, double xbola, double ybola, int id);
     void calc_repulsao2(fira_message::Robot rb,double px,double py,double F[]);
     void vaiPara_diodo(fira_message::Robot rb,double px, double py, int id);
+    void atacante_todos(fira_message::Robot rb,fira_message::Ball ball, int id);
+    void zagueiro_todos(Team blue, Team yellow, fira_message::Ball ball, int id);
+    //Atributos para zagueiro_cone
+    vector<double>* resultante = NULL;
+    vector<pair<double,double>>* componentes = NULL;
+
+    //Atributos para atacante_coneLaam
+    vector<pair<double,double>>* componentes_2 = NULL;
+    vector<double>* resultante_2 = NULL;
+    vector<string>* name_vectors = NULL;
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
@@ -105,6 +152,8 @@ class Strategy {
     double limita_velocidade(double, double);
 
 };
+
+
 
 #endif // STRATEGY_H
 
