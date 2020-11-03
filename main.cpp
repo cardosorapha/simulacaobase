@@ -12,15 +12,15 @@
 
 #include "strategy.h"
 
-#include <iostream>
+/*#include <iostream>
 #include <opencv4/opencv2/opencv.hpp>
 #include <opencv4/opencv2/core/mat.hpp>
 #include <opencv4/opencv2/calib3d/calib3d.hpp>
 #include <opencv4/opencv2/highgui/highgui.hpp>
 #include <opencv4/opencv2/imgproc/imgproc.hpp>
-
+*/
 using namespace std;
-using namespace cv;
+//using namespace cv;
 
 void printRobotInfo(const fira_message::Robot & robot) {
 
@@ -39,15 +39,15 @@ int main(int argc, char *argv[]){
 
 
     // generate space
-    cv::Mat image;
-    cv::Vec3b val;
-
+    //cv::Mat image;
+    //cv::Vec3b val;
+/*
     image= cv::imread("campo.png",cv::IMREAD_COLOR);
     if(!image.data)
       std::cout << "nao abriu campo.png" << std::endl;
 
     cv::namedWindow("Plot Virtual", cv::WINDOW_AUTOSIZE);
-
+*/
 
     RoboCupSSLClient client;
     client.open(false);
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
                //printf("VL:%f\n",estrategia.vRL[2][1]);
 
                //----------------Plot Virtual---------------------//
-
+/*
                 image= cv::imread("campo.png",cv::IMREAD_COLOR);
                 //Marcações(detalhe)
                // rectangle(image,Point(((-0.75)+0.75)*400,(-0.35+0.65)*400),Point(((-0.60)+0.75)*400,(+0.35+0.65)*400),Scalar(255,255,255),2);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]){
 
                 //Seta de predição
                 arrowedLine(image,Point((ball.x()+0.75)*400,(-ball.y()+0.65)*400),Point(((estrategia.predictedBall.x)+0.75)*400,(-estrategia.predictedBall.y+0.65)*400),Scalar(255,255,0),2);
-
+*/
                /* //Plot dos zagueiros
                 double raio = 0.08;
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
 
                 //Plot do atacante
                 //Goal sector zones
-                circle(image,Point((0.75+0.75)*400,(-0+0.65)*400),0.2*400,Scalar(0,0,255),2);
+/*                circle(image,Point((0.75+0.75)*400,(-0+0.65)*400),0.2*400,Scalar(0,0,255),2);
                 for (int i = 0;i<9;i++)
                 {
                     double p = i*(M_PI/8);
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]){
                 }
                 arrowedLine(image,Point(((*blue)[2].x()+0.75)*400,(-(*blue)[2].y()+0.65)*400),Point(((estrategia.resultante_2->at(0))+0.75)*400,(-(estrategia.resultante_2->at(1))+0.65)*400),Scalar(0,255,255),2,5,0,0.3);
 
-
+*/
 
 
 /*
@@ -216,14 +216,14 @@ int main(int argc, char *argv[]){
 
 
 
-                imshow( "Plot Virtual", image );
-                waitKey(1);
+                //imshow( "Plot Virtual", image );
+                //waitKey(1);
             }
         }
 
     }
 
-    destroyAllWindows();
+    //destroyAllWindows();
 
 
     return 0;
