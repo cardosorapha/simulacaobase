@@ -10,6 +10,7 @@
 #include "net/pb/common.pb.h"
 #include "net/pb/packet.pb.h"
 #include "net/pb/replacement.pb.h"
+#include <time.h>
 
 struct ang_err
 {
@@ -136,6 +137,7 @@ class Strategy {
     vector<pair<double,double>>* componentes_2 = NULL;
     vector<double>* resultante_2 = NULL;
     vector<string>* name_vectors = NULL;
+    void penalti(fira_message::Robot,fira_message::Ball,int,int);
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
