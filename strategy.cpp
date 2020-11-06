@@ -111,26 +111,225 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
                              fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                              fira_message::Ball ball, const fira_message::Field & field)
 {
-    Team blue(b0,b1,b2);
-    Team yellow(y0,y1,y2);
 
-    goleiro_petersson(b0,ball,0);
-    zagueiro_todos(blue,yellow,ball,1);
-    atacante_todos(b2,ball,2);
+    penalti(b0,ball,0,1);
+  //  static Team blue(b0,b1,b2);
+  //  static Team yellow(y0,y1,y2);
+
+   //   goleiro_petersson(b0,ball,0);
+   //   zagueiro2(b1,ball.x(),ball.y(),1);
+   //   atacante_todos(b2,ball,2);
+
+  //    zagueiro_todos(blue,yellow,ball,1);
+  //    atacante_todos(b2,ball,2);
+/*
+    static bool kappa = true;
+
+    static int goleiro,zagueiro,atacante;
+    //rodar somente na primeira iteração ou quando detectar reset do juiz
+    if(kappa){
+        kappa = false;
+        //Define o centro do gol dependendo do lado
+        double gol_x = -0.7*lado;
+        //A menor distancia ate o gol determina o goleiro
+        double dist0_gol = sqrt(pow(b0.x() - gol_x,2) + pow(b0.x(),2) );
+        double dist1_gol = sqrt(pow(b1.x() - gol_x,2) + pow(b1.x(),2) );
+        double dist2_gol = sqrt(pow(b2.x() - gol_x,2) + pow(b2.x(),2) );
+        srand (time(NULL));
+        double num = rand()%2 + 1;
+
+        //definindo o goleiro
+        if(dist0_gol <= dist1_gol && dist0_gol <= dist2_gol){
+            goleiro = 0;
+            if (num == 1){
+               atacante = 1;
+               zagueiro = 2;
+            }else{
+               atacante = 2;
+               zagueiro = 1;
+            }
+        }
+
+        if(dist1_gol < dist0_gol && dist1_gol <= dist2_gol){
+            goleiro = 1;
+            if (num == 1){
+               atacante = 0;
+               zagueiro = 2;
+            }else{
+               atacante = 2;
+               zagueiro = 0;
+            }
+        }
+
+        if(dist2_gol < dist0_gol && dist2_gol < dist1_gol){
+            goleiro = 2;
+            if (num == 1){
+               atacante = 1;
+               zagueiro = 0;
+            }else{
+               atacante = 0;
+               zagueiro = 1;
+            }
+        }
+
+
+    }
+
+    //Roda o programa de acordo com as especificações abaixo
+    if(goleiro == 0){
+        goleiro_petersson(b0,ball,0);
+       if(atacante == 1){
+           zagueiro2(b2,ball.x(),ball.y(),2);
+           //zagueiro_todos(blue,yellow,ball,2);
+           atacante_todos(b1,ball,1);
+       }else if(atacante == 2){
+           zagueiro2(b2,ball.x(),ball.y(),1);
+//           zagueiro_todos(blue,yellow,ball,1);
+           atacante_todos(b2,ball,2);
+       }
+    }
+
+    if(goleiro == 1){
+        goleiro_petersson(b1,ball,1);
+        if(atacante == 0){
+            zagueiro2(b2,ball.x(),ball.y(),2);
+           // zagueiro_todos(blue,yellow,ball,2);
+            atacante_todos(b0,ball,0);
+        }else if(atacante == 2){
+            zagueiro2(b0,ball.x(),ball.y(),0);
+//            zagueiro_todos(blue,yellow,ball,0);
+            atacante_todos(b2,ball,2);
+        }
+    }
+
+    if(goleiro == 2){
+        goleiro_petersson(b2,ball,2);
+
+        if(atacante == 0){
+            zagueiro2(b1,ball.x(),ball.y(),1);
+//            zagueiro_todos(blue,yellow,ball,1);
+            atacante_todos(b0,ball,0);
+        }else if(atacante == 1)
+            zagueiro2(b0,ball.x(),ball.y(),0);{
+       //     zagueiro_todos(blue,yellow,ball,0);
+            atacante_todos(b1,ball,1);
+        }
+    }
+*/
+
     cinematica_azul();
+
 }
 
 void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                fira_message::Ball ball, const fira_message::Field & field)
 {
-    Team blue(b0,b1,b2);
-    Team yellow(y0,y1,y2);
+  //  static Team blue(y0,y1,y2);
+  //  static Team yellow(y0,y1,y2);
 
     goleiro_petersson(y0,ball,0);
-    zagueiro_todos(yellow,blue,ball,1);
-    //atacante1(y2,ball.x(),ball.y(),2);
-    atacante_todos(y2,ball,2);
+  //  zagueiro2(y1,ball.x(),ball.y(),1);
+  //  atacante_todos(y2,ball,2);
+
+   //   goleiro_petersson(y0,ball,0);
+   //      zagueiro_todos(blue,yellow,ball,1);
+   //  atacante_todos(y2,ball,2);
+/*
+    static bool kappa = true;
+
+    static int goleiro,zagueiro,atacante;
+    //rodar somente na primeira iteração ou quando detectar reset do juiz
+    if(kappa){
+        kappa = false;
+        //Define o centro do gol dependendo do lado
+        double gol_x = -0.7*lado;
+        //A menor distancia ate o gol determina o goleiro
+        double dist0_gol = sqrt(pow(y0.x() - gol_x,2) + pow(y0.x(),2) );
+        double dist1_gol = sqrt(pow(y1.x() - gol_x,2) + pow(y1.x(),2) );
+        double dist2_gol = sqrt(pow(y2.x() - gol_x,2) + pow(y2.x(),2) );
+        srand (time(NULL));
+        double num = rand()%2 + 1;
+
+        //definindo o goleiro
+        if(dist0_gol <= dist1_gol && dist0_gol <= dist2_gol){
+            goleiro = 0;
+            if (num == 1){
+               atacante = 1;
+               zagueiro = 2;
+            }else{
+               atacante = 2;
+               zagueiro = 1;
+            }
+        }
+
+        if(dist1_gol < dist0_gol && dist1_gol <= dist2_gol){
+            goleiro = 1;
+            if (num == 1){
+               atacante = 0;
+               zagueiro = 2;
+            }else{
+               atacante = 2;
+               zagueiro = 0;
+            }
+        }
+
+        if(dist2_gol < dist0_gol && dist2_gol < dist1_gol){
+            goleiro = 2;
+            if (num == 1){
+               atacante = 1;
+               zagueiro = 0;
+            }else{
+               atacante = 0;
+               zagueiro = 1;
+            }
+        }
+
+
+    }
+
+
+    //Roda o programa de acordo com as especificações abaixo
+    if(goleiro == 0){
+        goleiro_petersson(y0,ball,0);
+       if(atacante == 1){
+           zagueiro2(y2,ball.x(),ball.y(),2);
+           //zagueiro_todos(blue,yellow,ball,2);
+           atacante_todos(y1,ball,1);
+       }else if(atacante == 2){
+           zagueiro2(y2,ball.x(),ball.y(),1);
+//           zagueiro_todos(blue,yellow,ball,1);
+           atacante_todos(y2,ball,2);
+       }
+    }
+
+    if(goleiro == 1){
+        goleiro_petersson(y1,ball,1);
+        if(atacante == 0){
+            zagueiro2(y2,ball.x(),ball.y(),2);
+           // zagueiro_todos(blue,yellow,ball,2);
+            atacante_todos(y0,ball,0);
+        }else if(atacante == 2){
+            zagueiro2(y0,ball.x(),ball.y(),0);
+//            zagueiro_todos(blue,yellow,ball,0);
+            atacante_todos(y2,ball,2);
+        }
+    }
+
+    if(goleiro == 2){
+        goleiro_petersson(y2,ball,2);
+
+        if(atacante == 0){
+            zagueiro2(y1,ball.x(),ball.y(),1);
+//            zagueiro_todos(blue,yellow,ball,1);
+            atacante_todos(y0,ball,0);
+        }else if(atacante == 1){
+            zagueiro2(y0,ball.x(),ball.y(),0);
+       //     zagueiro_todos(blue,yellow,ball,0);
+            atacante_todos(y1,ball,1);
+        }
+    }
+    8*/
     cinematica_amarelo();
     //TODO
 }
@@ -869,62 +1068,109 @@ void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int 
    }
 }
 
-// Zagueiro David + Cone
 void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int id){
-    double x_penalti =  0.4;
-    double x_meio_de_campo = 0.0;
-    double x_radius = 0.2;
-    double y_top = 0.65;
-    double ala_deepth = 0.3;
-    double K_press = 0.2;
+    double x_penalti =  0.4*lado; //bolinha do penalti
+    double x_meio_de_campo = 0.0; //centro do campo
+    double x_radius = 0.2*lado; //raio do circulo do meio de campo
+    double y_top = 0.65; // metade da largura do campo
+    double ala_deepth = 0.35; //metade da área do goleiro
+    double K_press = 0.2*lado;
 
-    if(xbola > x_penalti)
-    {    //Se a Bola estiver na zona "A"
-        vaiPara(rb,x_meio_de_campo + K_press + 0.1,ybola,id);
-        printf("AAA !! \n");
+    if(lado == 1){
+        //lado azul
+        if(xbola > x_penalti)
+        {    //Se a Bola estiver na zona "A"
+            vaiPara_desviando(rb,x_meio_de_campo + K_press + 0.1,ybola,id);
+            if((distancia(rb,xbola,ybola)< 0.2) && rb.x() < xbola){
+                //Se o robo estiver perto da bola e atrás dela
+                vaiPara(rb,predictedBall.x,predictedBall.y,id);
+            }
+        }
+        else if(xbola >= x_meio_de_campo && (ybola < (y_top - ala_deepth) && ybola > (ala_deepth - y_top)))
+        {    //Se a Bola estiver na zona "B_mid"
+            vaiPara_desviando(rb,-x_penalti,ybola,id);
+            if((distancia(rb,xbola,ybola)< 0.2) && rb.x() < xbola){
+                //Se o robo estiver perto da bola e atrás dela
+                vaiPara(rb,predictedBall.x,predictedBall.y,id);
+            }
+        }
+        else if((xbola >= x_meio_de_campo) && (ybola > (y_top - ala_deepth) || ybola < (ala_deepth - y_top)))
+        {    //Se a Bola estiver na zona "B_top" ou "B_bot"
+            vaiPara_desviando(rb,-x_radius,ybola,id);
+        }
+        else if(xbola < x_meio_de_campo && xbola > rb.x() && (ybola < (y_top - ala_deepth) && ybola > (ala_deepth - y_top)))
+        {    //Se a Bola estiver na zona "C"
+            vaiPara_desviando(rb,xbola,ybola,id);
+        }
+        else if((xbola < x_meio_de_campo && ybola > (y_top - ala_deepth +0.1)))
+        {   //Se a Bola estiver na zona "D"
+            vaiPara_desviando(rb,predictedBall.x,y_top - ala_deepth +0.1,id);
+        }
+        else if((xbola < x_meio_de_campo) && ybola < (ala_deepth - y_top  -0.1))
+        {    //Se a Bola estiver na zona "E"
+            vaiPara_desviando(rb,predictedBall.x,ala_deepth - y_top -0.1,id);
+        }
+        else // se não estiver em nenhuma das regiôes
+        {
+            vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
+        }
+        //gira se a bola estiver muito perto
+        if ((distancia(rb,xbola,ybola) < 0.08) && (((rb.x() < xbola)&&lado == 1) || ((rb.x() > xbola)&&lado == -1))){
+            if(ybola < 0){
+               girarHorario(125,id);
+            }
+            if(ybola > 0){
+               girarAntihorario(125,id);
+            }
+        }
+     }else{
+        //lado amarelo
+        if(xbola < x_penalti)
+        {    //Se a Bola estiver na zona "A"
+            vaiPara_desviando(rb,x_meio_de_campo + K_press - 0.1,ybola,id);
+            if((distancia(rb,xbola,ybola)< 0.2) && rb.x() > xbola){
+                //Se o robo estiver perto da bola e atrás dela
+                vaiPara(rb,predictedBall.x,predictedBall.y,id);
+            }
+        }
+        else if(xbola <= x_meio_de_campo && (ybola < (y_top - ala_deepth) && ybola > (ala_deepth - y_top)))
+        {    //Se a Bola estiver na zona "B_mid"
+            vaiPara_desviando(rb,-x_penalti,ybola,id);
+            if((distancia(rb,xbola,ybola)< 0.2) && rb.x() > xbola){
+                //Se o robo estiver perto da bola e atrás dela
+                vaiPara(rb,predictedBall.x,predictedBall.y,id);
+            }
+        }
+        else if((xbola <= x_meio_de_campo) && (ybola > (y_top - ala_deepth) || ybola < (ala_deepth - y_top)))
+        {    //Se a Bola estiver na zona "B_top" ou "B_bot"
+            vaiPara_desviando(rb,-x_radius,ybola,id);
+        }
+        else if(xbola > x_meio_de_campo && xbola < rb.x() && (ybola < (y_top - ala_deepth) && ybola > (ala_deepth - y_top)))
+        {    //Se a Bola estiver na zona "C"
+            vaiPara_desviando(rb,xbola,ybola,id);
+        }
+        else if((xbola > x_meio_de_campo && ybola > (y_top - ala_deepth +0.1)))
+        {   //Se a Bola estiver na zona "D"
+            vaiPara_desviando(rb,predictedBall.x,y_top - ala_deepth +0.1,id);
+        }
+        else if((xbola > x_meio_de_campo) && ybola < (ala_deepth - y_top  -0.1))
+        {    //Se a Bola estiver na zona "E"
+            vaiPara_desviando(rb,predictedBall.x,ala_deepth - y_top -0.1,id);
+        }
+        else // se não estiver em nenhuma das regiôes
+        {
+            vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
+        }
+        //gira se a bola estiver muito perto
+        if ((distancia(rb,xbola,ybola) < 0.08) && (((rb.x() < xbola)&&lado == 1) || ((rb.x() > xbola)&&lado == -1))){
+            if(ybola > 0){
+               girarHorario(125,id);
+            }
+            if(ybola < 0){
+               girarAntihorario(125,id);
+            }
+        }
     }
-    else if(xbola >= x_meio_de_campo
-            && (ybola < (y_top - ala_deepth)
-               && ybola > (ala_deepth - y_top)))
-    {    //Se a Bola estiver na zona "B_mid"
-        vaiPara(rb,-x_penalti,ybola,id);
-        printf("BBB mid !! \n");
-    }
-    else if((xbola >= x_meio_de_campo)
-             && (ybola > (y_top - ala_deepth) || ybola < (ala_deepth - y_top)))
-    {    //Se a Bola estiver na zona "B_top" ou "B_bot"
-        vaiPara(rb,-x_radius,ybola,id);
-        printf("BBB top ou bot !! \n");
-    }
-    else if(xbola < x_meio_de_campo
-            && xbola > rb.x()
-              && (ybola < (y_top - ala_deepth)
-                && ybola > (ala_deepth - y_top)))
-    {    //Se a Bola estiver na zona "C"
-        vaiPara(rb,xbola,ybola,id);
-        printf("CCC !! \n");
-    }
-    else if((xbola < x_meio_de_campo
-             && ybola > (y_top - ala_deepth)))
-    {    //Se a Bola estiver na zona "D"
-        vaiPara(rb,xbola,y_top - ala_deepth,id);
-        printf("DDD !! \n");
-    }
-    else if((xbola < x_meio_de_campo)
-             && ybola < (ala_deepth - y_top))
-    {    //Se a Bola estiver na zona "E"
-        vaiPara(rb,xbola,ala_deepth - y_top,id);
-        printf("EEE !! \n");
-    }
-    else
-    {
-        printf("tururu !! \n");
-        vaiPara(rb,-x_penalti -0.1, 0.0,id);
-    }
-
-   // if((distancia(rb,xbola,ybola) < 0.08) && (xbola > rb.x())){
-   //     chute(id);
-   // }
 }
 
 void Strategy::zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id){
@@ -1404,4 +1650,35 @@ if (lado > 0){
 
     }
 }
+}
+
+void Strategy::penalti(fira_message::Robot rb,fira_message::Ball ball, int id,int opcao){
+    switch(opcao){
+    //jogada ensaiada
+    case 1:
+        static double pos[6][2] = {{0,0},{0.4,0},{0.45,0.05}};
+        static int ind = 0;
+
+        vaiPara(rb,pos[ind][0],pos[ind][1],id);
+
+        if (sqrt(pow(rb.x() - pos[ind][0],2) + pow(rb.y() - pos[ind][1],2)) < 0.01){
+            ind++;
+        }
+
+        if (ind > 6){
+            ind = 0;
+        }
+        break;
+    case 2:
+        vaiPara(rb,ball.x(),ball.y(),id);
+        break;
+    case 3:
+        double pos2[2] = {0.34,0};
+
+        if(sqrt(pow(rb.x() - pos2[0],2) + pow(rb.y() - pos2[1],2)) > 0.01){
+            vaiPara(rb,pos2[0],pos2[1],id);
+        }else{
+            girarHorario(125,id);
+        }
+    }
 }
