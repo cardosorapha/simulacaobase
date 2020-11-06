@@ -112,7 +112,7 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
                              fira_message::Ball ball, const fira_message::Field & field)
 {
 
-    penalti(b0,ball,0,1);
+ //   penalti(b0,ball,0,1);
   //  static Team blue(b0,b1,b2);
   //  static Team yellow(y0,y1,y2);
 
@@ -122,7 +122,7 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
 
   //    zagueiro_todos(blue,yellow,ball,1);
   //    atacante_todos(b2,ball,2);
-/*
+
     static bool kappa = true;
 
     static int goleiro,zagueiro,atacante;
@@ -141,38 +141,21 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
         //definindo o goleiro
         if(dist0_gol <= dist1_gol && dist0_gol <= dist2_gol){
             goleiro = 0;
-            if (num == 1){
-               atacante = 1;
-               zagueiro = 2;
-            }else{
-               atacante = 2;
-               zagueiro = 1;
-            }
+            atacante = 1;
+            zagueiro = 2;
         }
 
         if(dist1_gol < dist0_gol && dist1_gol <= dist2_gol){
             goleiro = 1;
-            if (num == 1){
-               atacante = 0;
-               zagueiro = 2;
-            }else{
-               atacante = 2;
-               zagueiro = 0;
-            }
+            atacante = 0;
+            zagueiro = 2;
         }
 
         if(dist2_gol < dist0_gol && dist2_gol < dist1_gol){
             goleiro = 2;
-            if (num == 1){
-               atacante = 1;
-               zagueiro = 0;
-            }else{
-               atacante = 0;
-               zagueiro = 1;
-            }
+            atacante = 1;
+            zagueiro = 0;
         }
-
-
     }
 
     //Roda o programa de acordo com as especificações abaixo
@@ -215,7 +198,7 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
             atacante_todos(b1,ball,1);
         }
     }
-*/
+
 
     cinematica_azul();
 
@@ -228,14 +211,14 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
   //  static Team blue(y0,y1,y2);
   //  static Team yellow(y0,y1,y2);
 
-    goleiro_petersson(y0,ball,0);
+   // goleiro_petersson(y0,ball,0);
   //  zagueiro2(y1,ball.x(),ball.y(),1);
   //  atacante_todos(y2,ball,2);
 
    //   goleiro_petersson(y0,ball,0);
    //      zagueiro_todos(blue,yellow,ball,1);
    //  atacante_todos(y2,ball,2);
-/*
+
     static bool kappa = true;
 
     static int goleiro,zagueiro,atacante;
@@ -248,46 +231,27 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
         double dist0_gol = sqrt(pow(y0.x() - gol_x,2) + pow(y0.x(),2) );
         double dist1_gol = sqrt(pow(y1.x() - gol_x,2) + pow(y1.x(),2) );
         double dist2_gol = sqrt(pow(y2.x() - gol_x,2) + pow(y2.x(),2) );
-        srand (time(NULL));
-        double num = rand()%2 + 1;
 
         //definindo o goleiro
         if(dist0_gol <= dist1_gol && dist0_gol <= dist2_gol){
             goleiro = 0;
-            if (num == 1){
-               atacante = 1;
-               zagueiro = 2;
-            }else{
-               atacante = 2;
-               zagueiro = 1;
-            }
+            atacante = 1;
+            zagueiro = 2;
         }
 
         if(dist1_gol < dist0_gol && dist1_gol <= dist2_gol){
             goleiro = 1;
-            if (num == 1){
-               atacante = 0;
-               zagueiro = 2;
-            }else{
-               atacante = 2;
-               zagueiro = 0;
-            }
+            atacante = 0;
+            zagueiro = 2;
+
         }
 
         if(dist2_gol < dist0_gol && dist2_gol < dist1_gol){
             goleiro = 2;
-            if (num == 1){
-               atacante = 1;
-               zagueiro = 0;
-            }else{
-               atacante = 0;
-               zagueiro = 1;
-            }
+            atacante = 1;
+            zagueiro = 0;
         }
-
-
     }
-
 
     //Roda o programa de acordo com as especificações abaixo
     if(goleiro == 0){
@@ -329,7 +293,7 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
             atacante_todos(y1,ball,1);
         }
     }
-    8*/
+
     cinematica_amarelo();
     //TODO
 }
@@ -1249,20 +1213,6 @@ void Strategy::atacante1(fira_message::Robot rb, double px, double py, int id){
     }
 
 }
-
-void Strategy::vaiPara_diodo(fira_message::Robot rb,double px, double py, int id){
-    if (lado > 0){
-        if (rb.x() > px){
-            vaiPara(rb,px,py,id);
-        }else{
-            State inicio(rb.x(),rb.y(),rb.orientation());
-            State fim(px,py,rb.orientation());
-            rrt_graph rrt(inicio,fim);
-
-        }
-    }
-}
-
 
 //Atacante de Lázaro e cone
 void Strategy::atacante_todos(fira_message::Robot rb,fira_message::Ball ball, int id)
