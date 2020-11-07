@@ -1,4 +1,5 @@
 //author  Renato Sousa, 2018
+//modificações TIME LAMBE SUJO 2020
 #include <QtNetwork>
 #include <stdio.h>
 #include "net/robocup_ssl_client.h"
@@ -15,32 +16,76 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-/*
-void printRobotInfo(const fira_message::Robot & robot) {
+#include "net/vssclient.h"
 
-    printf("ID=%3d \n",robot.robot_id());
+#define UDP_ADDRESS "224.5.23.2"
+#define REFEREE_PORT 10003
+#define REPLACER_PORT 10004
 
-    printf(" POS=<%9.2f,%9.2f> \n",robot.x(),robot.y());
-    printf(" VEL=<%9.2f,%9.2f> \n",robot.vx(),robot.vy());
-
-    printf("ANGLE=%6.3f \n",robot.orientation());
-    printf("ANGLE VEL=%6.3f \n",robot.vorientation());
+QString getFoulNameById(VSSRef::Foul foul){
+    switch(foul){
+        case VSSRef::Foul::FREE_BALL:    return "FREE_BALL";
+        case VSSRef::Foul::FREE_KICK:    return "FREE_KICK";
+        case VSSRef::Foul::GOAL_KICK:    return "GOAL_KICK";
+        case VSSRef::Foul::PENALTY_KICK: return "PENALTY_KICK";
+        case VSSRef::Foul::KICKOFF:      return "KICKOFF";
+        case VSSRef::Foul::STOP:         return "STOP";
+        case VSSRef::Foul::GAME_ON:      return "GAME_ON";
+        default:                         return "FOUL NOT IDENTIFIED";
+    }
 }
-*/
+
+QString getTeamColorNameById(VSSRef::Color color){
+    switch(color){
+        case VSSRef::Color::NONE:    return "NONE";
+        case VSSRef::Color::BLUE:    return "BLUE";
+        case VSSRef::Color::YELLOW:  return "YELLOW";
+        default:                     return "COLOR NOT IDENTIFIED";
+    }
+}
+
+QString getQuadrantNameById(VSSRef::Quadrant quadrant){
+    switch(quadrant){
+        case VSSRef::Quadrant::NO_QUADRANT: return "NO QUADRANT";
+        case VSSRef::Quadrant::QUADRANT_1:  return "QUADRANT 1";
+        case VSSRef::Quadrant::QUADRANT_2:  return "QUADRANT 2";
+        case VSSRef::Quadrant::QUADRANT_3:  return "QUADRANT 3";
+        case VSSRef::Quadrant::QUADRANT_4:  return "QUADRANT 4";
+        default:                            return "QUADRANT NOT IDENTIFIED";
+    }
+}
+
+QString getHalfNameById(VSSRef::Half half){
+    switch(half){
+        case VSSRef::Half::NO_HALF: return "NO_HALF";
+        case VSSRef::Half::FIRST_HALF: return "FIRST HALF";
+        case VSSRef::Half::SECOND_HALF: return "SECOND HALF";
+        default: "NO HALF DEFINED";
+    }
+}
+
+using namespace std;
+
 int main(int argc, char *argv[]){
-    //(void)argc;
-    //(void)argv;
-    /*
-    printf(argv[1]);
-    printf("\n");
-    printf(argv[2]);
-    printf("\n");
-    printf(argv[3]);
-    printf("\n");
-    printf(argv[4]);
-    printf("\n");
-    */
+
+    QUdpSocket *replacerSocket = new QUdpSocket();
+    VSSClient *client = new VSSClient(REFEREE_PORT, UDP_ADDRESS);
+
+    // Performing connection to send Replacer commands
+    if(replacerSocket->isOpen())
+        replacerSocket->close();
+
+    replacerSocket->connectToHost(UDP_ADDRESS, REPLACER_PORT, QIODevice::WriteOnly, QAbstractSocket::IPv4Protocol);
+    std::cout << "[Example] Connected to REPLACER socket in port " << REPLACER_PORT << " and address = " << UDP_ADDRESS << ".\n";
+
+    // Performing connection to receive Referee foul commands
+    if(client->open(true))
+        std::cout << "[Example] Listening to referee system on port " << REFEREE_PORT << " and address = " << UDP_ADDRESS << ".\n";
+    else{
+        std::cout << "[Example] Cannot listen to referee system on port " << REFEREE_PORT << " and address = " << UDP_ADDRESS << ".\n";
+        return 0;
+    }
+
     string IP;
     string vision;
     string command;
@@ -99,9 +144,10 @@ int main(int argc, char *argv[]){
     //inicializa estrategia azul ou amarela
     Strategy estrategia(my_robots_are_yellow);
 
+
     while(true) {
+        //JOGO RODANDO
         if (visionClient.receive(packet)) {
-            //printf("-----Received Wrapper Packet---------------------------------------------\n");
             //see if the packet contains a robot detection frame:
             if ((packet.has_frame())&&(packet.has_field())) {
                 fira_message::Frame detection = packet.frame();
@@ -118,17 +164,7 @@ int main(int argc, char *argv[]){
                     estrategia.predict_ball(ball);
                 }
 
-                //printf("-Ball:  POS=<%9.2f,%9.2f> \n",ball.x(),ball.y());
-
-                //printf("-[Geometry Data]-------\n");
                 const fira_message::Field & field = packet.field();
-
-                //printf("Field Dimensions:\n");
-                //printf("  -field_length=%f (mm)\n",field.length());
-                //printf("  -field_width=%f (mm)\n",field.width());
-                //printf("  -goal_width=%f (mm)\n",field.goal_width());
-                //printf("  -goal_depth=%f (mm)\n",field.goal_depth());
-                //Robots info
                 //Blue
                 fira_message::Robot b0 = detection.robots_blue(0);
                 fira_message::Robot b1 = detection.robots_blue(1);
@@ -168,17 +204,64 @@ int main(int argc, char *argv[]){
 
                 }
 
+            }
+        }
+        VSSRef::ref_to_team::VSSRef_Command command;
 
-                //Debug
-               //printf("V:%f\n",sqrt(pow(b2.vx(),2)+pow(b2.vy(),2)));
-               //printf("W:%f\n",b2.vorientation());
-               //printf("Venviado:%f\n",estrategia.VW[2][0]);
-               //printf("Wenviado:%f\n",estrategia.VW[2][1]);
-               //printf("VR:%f\n",estrategia.vRL[2][0]);
-               //printf("VL:%f\n",estrategia.vRL[2][1]);
+        //JUIZ ENVIOU COMANDO
+        if(client->receive(command)){
+            // If received command, let's debug it
+            std::cout << "[Example] Succesfully received an command from ref: " << getFoulNameById(command.foul()).toStdString() << " for team " << getTeamColorNameById(command.teamcolor()).toStdString() << std::endl;
+            std::cout << getQuadrantNameById(command.foulquadrant()).toStdString() << std::endl;
+
+            // Showing timestamp
+            std::cout << "Timestamp: " << command.timestamp() << std::endl;
+
+            // Showing half
+            std::cout << "Half: " << getHalfNameById(command.gamehalf()).toStdString() << std::endl;
+
+            // Now let's send an placement packet to it
+
+            // First creating an placement command for the blue team
+            VSSRef::team_to_ref::VSSRef_Placement placementCommandBlue;
+            VSSRef::Frame *placementFrameBlue = new VSSRef::Frame();
+            placementFrameBlue->set_teamcolor(VSSRef::Color::BLUE);
+            for(int x = 0; x < 3; x++){
+                VSSRef::Robot *robot = placementFrameBlue->add_robots();
+                robot->set_robot_id(x);
+                robot->set_x(0.5);
+                robot->set_y(-0.2 + (0.2 * x));
+                robot->set_orientation(0.0);
+            }
+            placementCommandBlue.set_allocated_world(placementFrameBlue);
+
+            // Sending blue
+            std::string msgBlue;
+            placementCommandBlue.SerializeToString(&msgBlue);
+            if(replacerSocket->write(msgBlue.c_str(), msgBlue.length()) == -1){
+                std::cout << "[Example] Failed to write to replacer socket: " << replacerSocket->errorString().toStdString() << std::endl;
+            }
+
+            // Now creating an placement command for the yellow team
+            VSSRef::team_to_ref::VSSRef_Placement placementCommandYellow;
+            VSSRef::Frame *placementFrameYellow = new VSSRef::Frame();
+            placementFrameYellow->set_teamcolor(VSSRef::Color::YELLOW);
+            for(int x = 0; x < 3; x++){
+                VSSRef::Robot *robot = placementFrameYellow->add_robots();
+                robot->set_robot_id(x);
+                robot->set_x(-0.5);
+                robot->set_y(-0.2 + (0.2 * x));
+                robot->set_orientation(180.0);
+            }
+            placementCommandYellow.set_allocated_world(placementFrameYellow);
+
+            // Sending yellow
+            std::string msgYellow;
+            placementCommandYellow.SerializeToString(&msgYellow);
+            if(replacerSocket->write(msgYellow.c_str(), msgYellow.length()) == -1){
+                std::cout << "[Example] Failed to write to replacer socket: " << replacerSocket->errorString().toStdString() << std::endl;
             }
         }
     }
-
     return 0;
 }
