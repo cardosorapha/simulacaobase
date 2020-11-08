@@ -127,7 +127,7 @@ class Strategy {
     void atacante1(fira_message::Robot rb, double xbola, double ybola, int id);
     void calc_repulsao2(fira_message::Robot rb,double px,double py,double F[]);
     void vaiPara_diodo(fira_message::Robot rb,double px, double py, int id);
-    void atacante_todos(fira_message::Robot rb,fira_message::Ball ball, int id);
+    void atacante_todos(Team my,Team adv, fira_message::Ball ball, int id, int idzag);
     void zagueiro_todos(Team blue, Team yellow, fira_message::Ball ball, int id);
     //Atributos para zagueiro_cone
     vector<double>* resultante = NULL;
