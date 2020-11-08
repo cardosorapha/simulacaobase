@@ -1048,7 +1048,7 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
     double K_press = 0.2*lado;
     double ajuste = 0.15; //ajuste de lugar onde o zagueiro, quando a bola está proximo do escanteio do seu time
     double ajuste2 = 0.2; //ajuste de distância que o zagueiro deve estar para ir na bola no campo de ataque
-
+    int teste = 0; //armazena se entrou no else
     if(lado == 1){
         //lado azul
         if(xbola > x_penalti)
@@ -1086,12 +1086,13 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         else // se não estiver em nenhuma das regiôes
         {
             vaiPara_desviando2(rb,-x_penalti -0.1, 0.0,id);
+            teste = 1; //entrou aqui
             /*if(sqrt( pow((-x_penalti -0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
                 vaiPara_desviando(rb,-x_penalti +0.1, 0.0,id);
             }*/
         }
         //gira se a bola estiver muito perto
-        if ((distancia(rb,xbola,ybola) < 0.08) && (((rb.x() < xbola)&&lado == 1))){
+        if ((distancia(rb,xbola,ybola) < 0.08) && (((rb.x() < xbola)&&teste == 0))){
             if(ybola < 0){
                girarHorario(125,id);
             }
@@ -1136,12 +1137,13 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         else // se não estiver em nenhuma das regiôes
         {
             vaiPara_desviando2(rb,-x_penalti +0.1, 0.0,id);
+            teste = 1;
             /*if(sqrt( pow((-x_penalti +0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
                 vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
             }*/
         }
         //gira se a bola estiver muito perto
-        if ((distancia(rb,xbola,ybola) < 0.08) && ((rb.x() > xbola)&&lado == -1)){
+        if ((distancia(rb,xbola,ybola) < 0.08) && ((rb.x() > xbola)&&teste == 0)){
             if(ybola > 0){
                girarHorario(125,id);
             }
@@ -1849,8 +1851,9 @@ void Strategy::calc_repulsao2(fira_message::Robot rb, double F[]){
          }
 
      }
+     raio_adversario = 0.25;
      dist_adversario = sqrt(pow((rb.x() - predictedBall.x),2) + pow((rb.y() - predictedBall.y),2));
-     if (dist_adversario <= raio_adversario && dist_adversario > 0.1){
+     if (dist_adversario <= raio_adversario && dist_adversario > 0.01){
          double dist_x = rb.x() - predictedBall.x;
          double dist_y = rb.y() - predictedBall.y;
 
