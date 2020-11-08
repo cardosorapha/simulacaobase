@@ -105,9 +105,11 @@ class Strategy {
     void saturacao(double V[]);
     void atualiza_pos(fira_message::Robot b0,fira_message::Robot b1,fira_message::Robot b2,fira_message::Robot y0,fira_message::Robot y1,fira_message::Robot y2);
     void calc_repulsao(fira_message::Robot rb, double F[]);
+    void calc_repulsao2(fira_message::Robot rb, double F[]);
     void converte_vetor(double V[],double);
     double filtro(double V,int);
     void vaiPara_desviando(fira_message::Robot,double,double,int);
+    void vaiPara_desviando2(fira_message::Robot,double,double,int);
     /*void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                      fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                                      double px, double py,int id);

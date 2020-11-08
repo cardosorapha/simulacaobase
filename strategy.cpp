@@ -1085,10 +1085,10 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         }
         else // se não estiver em nenhuma das regiôes
         {
-            vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
-            if(sqrt( pow((-x_penalti -0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
+            vaiPara_desviando2(rb,-x_penalti -0.1, 0.0,id);
+            /*if(sqrt( pow((-x_penalti -0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
                 vaiPara_desviando(rb,-x_penalti +0.1, 0.0,id);
-            }
+            }*/
         }
         //gira se a bola estiver muito perto
         if ((distancia(rb,xbola,ybola) < 0.08) && (((rb.x() < xbola)&&lado == 1))){
@@ -1135,10 +1135,10 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         }
         else // se não estiver em nenhuma das regiôes
         {
-            vaiPara_desviando(rb,-x_penalti +0.1, 0.0,id);
-            if(sqrt( pow((-x_penalti +0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
+            vaiPara_desviando2(rb,-x_penalti +0.1, 0.0,id);
+            /*if(sqrt( pow((-x_penalti +0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
                 vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
-            }
+            }*/
         }
         //gira se a bola estiver muito perto
         if ((distancia(rb,xbola,ybola) < 0.08) && ((rb.x() > xbola)&&lado == -1)){
@@ -1801,4 +1801,60 @@ void Strategy::penalti(fira_message::Robot rb,fira_message::Ball ball, int id,in
             girarHorario(125,id);
         }
     }
+}
+//serve apenas para o zagueiro2
+void Strategy::vaiPara_desviando2(fira_message::Robot rb,double px,double py,int id){
+
+    double V[2] = {px - rb.x(),py - rb.y()};
+
+    double F[2] = {0,0};
+
+    calc_repulsao2(rb,F);
+
+    double ka = 1;
+    double kr = 1;
+
+    converte_vetor(V,0.1);
+    converte_vetor(F,0.2);
+
+    double new_pos[2] = {rb.x() + ka*V[0] + kr*F[0],rb.y() + ka*V[1] + kr*F[1]};
+
+    Strategy::saturacao(new_pos);
+
+    vaiPara(rb,new_pos[0],new_pos[1],id);
+
+    filtro(VW[id][0],id);
+}
+
+//Campo repulsivo linear
+//serve apenas para o zagueiro2
+void Strategy::calc_repulsao2(fira_message::Robot rb, double F[]){
+     double raio_adversario = 0.2;  //raio de detecção do adversario
+
+     F[0] = 0;
+     F[1] = 0;
+
+     double dist_adversario;
+
+     for(int i = 0 ; i < 5 ; i++){
+
+         dist_adversario = sqrt(pow((rb.x() - pos_robos[i][0]),2) + pow((rb.y() - pos_robos[i][1]),2));
+
+         if (dist_adversario <= raio_adversario && dist_adversario > 0.01){
+             double dist_x = rb.x() - pos_robos[i][0];
+             double dist_y = rb.y() - pos_robos[i][1];
+
+             F[0] += raio_adversario*dist_x/dist_adversario - dist_x;
+             F[1] += raio_adversario*dist_y/dist_adversario - dist_y;
+         }
+
+     }
+     dist_adversario = sqrt(pow((rb.x() - predictedBall.x),2) + pow((rb.y() - predictedBall.y),2));
+     if (dist_adversario <= raio_adversario && dist_adversario > 0.1){
+         double dist_x = rb.x() - predictedBall.x;
+         double dist_y = rb.y() - predictedBall.y;
+
+         F[0] += raio_adversario*dist_x/dist_adversario - dist_x;
+         F[1] += raio_adversario*dist_y/dist_adversario - dist_y;
+     }
 }
