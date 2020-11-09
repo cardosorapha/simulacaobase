@@ -111,27 +111,15 @@ class Strategy {
     void converte_vetor(double V[],double);
     double filtro(double V,int);
     void vaiPara_desviando(fira_message::Robot,double,double,int);
-    /*void vaiPara_hotwheels(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
-                                     fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
-                                     double px, double py,int id);
-    bool robo_parede(fira_message::Robot);
-    void vaiPara2(fira_message::Robot,double,double,int);
-    void sai_robo(fira_message::Robot,fira_message::Robot,double F[]);
-    void sai_robo2(fira_message::Robot,fira_message::Robot,double F[]);
-    */
     vector<double> inserirRRT(vector<double>,vector<double>,int);
-    void goleiro(fira_message::Robot, double, double,int);
     void goleiro_petersson(fira_message::Robot,fira_message::Ball,int);
-    void goleiro2(fira_message::Robot,fira_message::Ball,int);
+    void goleiro_petersson2(fira_message::Robot,fira_message::Ball,int);
     void chute(int);
-    void zagueiro(fira_message::Robot, double, double,int);
     void zagueiro2(fira_message::Robot, double, double, int);
-    void zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id);
-    void atacante1(fira_message::Robot rb, double xbola, double ybola, int id);
     void calc_repulsao2(fira_message::Robot rb,double F[]);
     void atacante_todos(Team my,Team adv, fira_message::Ball ball, int id, int idzag);
-    void zagueiro_todos(Team blue, Team yellow, fira_message::Ball ball, int id);
     void vaiPara_desviando2(fira_message::Robot,double,double,int);
+
     //Atributos para zagueiro_cone
      vector<pair<double,double>>* componentes = NULL;
 
@@ -139,7 +127,6 @@ class Strategy {
     vector<pair<double,double>>* componentes_2 = NULL;
     vector<double>* resultante_2 = NULL;
     vector<string>* name_vectors = NULL;
-    void penalti(fira_message::Robot,fira_message::Ball,int,int);
   private:
     double L; //Distância entre roda e centro
     double R; //Raio da roda
@@ -149,7 +136,9 @@ class Strategy {
     void atualiza_memoria_azul(double, double);
     vector<double> memoria_azul_linear;
     vector<double> memoria_azul_angular;
-
+    void atualiza_memoria_amarelo(double, double);
+    vector<double> memoria_amarelo_linear;
+    vector<double> memoria_amarelo_angular;
 
     ang_err olhar(fira_message::Robot, double, double);
     double distancia(fira_message::Robot,double,double);
@@ -160,5 +149,4 @@ class Strategy {
 
 
 #endif // STRATEGY_H
-
 

@@ -297,13 +297,13 @@ int main(int argc, char *argv[]){
                    if(cor == "BLUE"){
                        double x[3] = {0.7,0.3,0.3};
                        double y[3] = {0,-0.3,0.3};
-                       double ori[3] = {90,0,0};
+                       double ori[3] = {0,0,0};
                        reposicionar_amarelo(x,y,ori,replacerSocket);
                    }
                    if(cor == "YELLOW"){
                        double x[3] = {0.7,0.3,0.3};
                        double y[3] = {0,-0.3,0.3};
-                       double ori[3] = {90,0,0};
+                       double ori[3] = {180,0,0};
                        reposicionar_amarelo(x,y,ori,replacerSocket);
                    }
                }
@@ -460,4 +460,3 @@ int main(int argc, char *argv[]){
     }
     return 0;
 }
-

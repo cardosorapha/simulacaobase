@@ -118,7 +118,7 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
     double dist2 = sqrt(pow(b2.x()-ball.x(),2)+pow(b2.y()-ball.y(),2));
 
     if(sit_juiz == "GAME_ON"){
-         goleiro_petersson(b0,ball,0);
+         goleiro_petersson2(b0,ball,0);
          if(ball.x() > -0.1){
              if (dist1 > dist2){
                  zagueiro2(b1,ball.x(),ball.y(),1);
@@ -152,7 +152,7 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
 
     if(sit_juiz == "GAME_ON"){
 
-        goleiro_petersson(y0,ball,0);
+        goleiro_petersson2(y0,ball,0);
          if(ball.x() < 0.1){
              if (dist1 > dist2){
                  zagueiro2(y1,ball.x(),ball.y(),1);
@@ -270,23 +270,43 @@ void Strategy::vaiParaDinamico(fira_message::Robot rb, double px, double py, int
     double temp_integral_l = 0;
     double temp_integral_a = 0;
 
-    for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
-    {
-        temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
+    if(lado == 1){
+        for (int i = 0; i < (int)memoria_azul_linear.size(); i++)
+        {
+            temp_integral_l = temp_integral_l + memoria_azul_linear.at(i);
+        }
+
+        for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
+        {
+            temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
+        }
+
+        V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
+
+        W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
+
+        VW[id][0] = V;
+        VW[id][1] = W;
+        atualiza_memoria_azul(erro_linear,erro_angular);
+    }else{
+        for (int i = 0; i < (int)memoria_amarelo_linear.size(); i++)
+        {
+            temp_integral_l = temp_integral_l + memoria_amarelo_linear.at(i);
+        }
+
+        for (int i = 0; i < (int)memoria_amarelo_angular.size(); i++)
+        {
+            temp_integral_a = temp_integral_a + memoria_amarelo_angular.at(i);
+        }
+
+        V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_amarelo_linear.at(0));
+
+        W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_amarelo_angular.at(0));
+
+        VW[id][0] = V;
+        VW[id][1] = W;
+        atualiza_memoria_amarelo(erro_linear,erro_angular);
     }
-
-    for (int i = 0; i < (int)memoria_azul_angular.size(); i++)
-    {
-        temp_integral_a = temp_integral_a + memoria_azul_angular.at(i);
-    }
-
-    V = Kp_l*erro_linear + Ki_l*temp_integral_l + Kd_l*(erro_linear-memoria_azul_linear.at(0));
-
-    W = Kp_a*erro_angular + Ki_a*temp_integral_a + Kd_a*(erro_angular-memoria_azul_angular.at(0));
-
-    VW[id][0] = V;
-    VW[id][1] = W;
-    atualiza_memoria_azul(erro_linear,erro_angular);
 }
 
 void Strategy::atualiza_memoria_azul(double linear, double angular)
@@ -299,6 +319,18 @@ void Strategy::atualiza_memoria_azul(double linear, double angular)
     memoria_azul_linear.insert(memoria_azul_linear.begin(),linear);
     memoria_azul_angular.insert(memoria_azul_angular.begin(),angular);
 }
+
+void Strategy::atualiza_memoria_amarelo(double linear, double angular)
+{
+    //Removendo últimos elementos
+    memoria_amarelo_linear.pop_back();
+    memoria_amarelo_angular.pop_back();
+
+    //Inserindo novos elementos no começo
+    memoria_amarelo_linear.insert(memoria_amarelo_linear.begin(),linear);
+    memoria_amarelo_angular.insert(memoria_amarelo_angular.begin(),angular);
+}
+
 
 double Strategy::controleAngular(double fi2) // função testada. lembrete : (sinal de w) = -(sinal de fi)
 {
@@ -580,136 +612,6 @@ vector<double> Strategy::inserirRRT(vector<double> V_in,vector<double> V_out,int
     }
     return V_out;
 }
-
-// Zagueiro David
-void Strategy::zagueiro(fira_message::Robot rb, double xbola, double ybola, int id){
-   double x_penalti =  0.4;
-   double x_meio_de_campo = 0.0;
-   double x_radius = 0.2;
-   double y_top = 0.35;
-   if(xbola >= x_penalti){
-       vaiPara(rb,x_meio_de_campo,ybola,id);
-   }else if(xbola >= x_meio_de_campo){
-       vaiPara(rb,-x_radius,ybola,id);
-   }else if(xbola >= -x_penalti){
-       vaiPara(rb,xbola,ybola,id);
-   }else if(ybola >= y_top && rb.y() <= ybola){
-       vaiPara(rb,xbola,ybola,id);
-   }else if(ybola <= -y_top && rb.y() >= ybola){
-       vaiPara(rb,xbola,ybola,id);
-   }else{
-       vaiPara(rb,-x_penalti -0.1, 0.0,id);
-   }
-}
-
-void Strategy::zagueiro3(fira_message::Robot rb, double xbola, double ybola, int id){
-
-    double x_penalti =  0.4;
-   double x_meio_de_campo = 0.0;
-   double x_radius = 0.2;
-   double y_top = 0.35;
-
-   if (lado > 0){ //azul
-       if(xbola >= x_penalti){
-           vaiPara_desviando(rb,x_meio_de_campo,ybola,id);
-       }else if(xbola >= x_meio_de_campo){
-           vaiPara_desviando(rb,-x_radius,ybola,id);
-       }else if(xbola >= -x_penalti){
-           vaiPara_desviando(rb,xbola,ybola,id);
-       }else if(ybola >= y_top && rb.y() <= ybola){
-           vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
-       }else if(ybola <= -y_top && rb.y() >= ybola){
-           vaiPara_desviando(rb,xbola-0.2,y_top+0.1,id);
-       }else{
-           vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
-       }
-   }else{
-       if(xbola <= -x_penalti){
-           vaiPara_desviando(rb,x_meio_de_campo,ybola,id);
-       }else if(xbola <= -x_meio_de_campo){
-           vaiPara_desviando(rb,x_radius,ybola,id);
-       }else if(xbola >= -x_penalti){
-           vaiPara_desviando(rb,xbola,ybola,id);
-       }else if(ybola >= y_top && rb.y() <= ybola){
-           vaiPara_desviando(rb,xbola+0.2,y_top+0.1,id);
-       }else if(ybola <= -y_top && rb.y() >= ybola){
-           vaiPara_desviando(rb,xbola+0.2,y_top+0.1,id);
-       }else{
-           vaiPara_desviando(rb,x_penalti + 0.1, 0.0,id);
-       }
-   }
-
-}
-
-void Strategy::atacante1(fira_message::Robot rb, double px, double py, int id){
-
-    double Cx = -0.05*lado;
-    double Cy = 0.05;
-    double destino = -0.8*lado;
-
-    if (lado == 1){
-        if (px >= 0){
-            if(distancia(rb,px,py) > 0.07){
-                double V[2] = {px+Cx,py*(1+Cy)};
-               // double V[2] = {px,py};
-                saturacao(V);
-                vaiPara_desviando(rb,V[0],V[1],id);
-            }else{
-           //     calc_repulsao2(rb,px,py,F);
-                vaiPara(rb,destino,0,id);
-            }
-        }else{
-            vaiPara(rb,0,py*(1+Cy),id);
-        }
-    }else{
-        if (px <= 0){
-            if(distancia(rb,px,py) > 0.07){
-                double V[2] = {px+Cx,py*(1+Cy)};
-               // double V[2] = {px,py};
-                saturacao(V);
-                vaiPara_desviando(rb,V[0],V[1],id);
-            }else{
-           //     calc_repulsao2(rb,px,py,F);
-                vaiPara(rb,destino,0,id);
-            }
-        }else{
-            vaiPara(rb,0,py*(1+Cy),id);
-        }
-    }
-
-}
-
-void Strategy::penalti(fira_message::Robot rb,fira_message::Ball ball, int id,int opcao){
-    switch(opcao){
-    //jogada ensaiada
-    case 1:
-        static double pos[6][2] = {{0,0},{0.4,0},{0.45,0.05}};
-        static int ind = 0;
-
-        vaiPara(rb,pos[ind][0],pos[ind][1],id);
-
-        if (sqrt(pow(rb.x() - pos[ind][0],2) + pow(rb.y() - pos[ind][1],2)) < 0.01){
-            ind++;
-        }
-
-        if (ind > 6){
-            ind = 0;
-        }
-        break;
-    case 2:
-        vaiPara(rb,ball.x(),ball.y(),id);
-        break;
-    case 3:
-        double pos2[2] = {0.34,0};
-
-        if(sqrt(pow(rb.x() - pos2[0],2) + pow(rb.y() - pos2[1],2)) > 0.01){
-            vaiPara(rb,pos2[0],pos2[1],id);
-        }else{
-            girarHorario(125,id);
-        }
-    }
-}
-
 
 void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int id){
     double x_penalti =  0.4*lado; //bolinha do penalti
@@ -1203,3 +1105,80 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
     }
 }
 
+
+void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball, int id){
+
+    double top_limit = 0.17; //largura do gol/2
+    double x_desejado = -0.7*lado;
+
+    double dist = distancia(rb,ball.x(),ball.y());
+    vector <double> new_pos = {0,0};
+
+    //se a bola estiver longe do goleiro utiliza o preditor para ajeitar sua posição
+    if ( dist > 0.3){
+        new_pos = {predictedBall.x,predictedBall.y};
+    }else{
+        new_pos = {ball.x(),ball.y()};
+    }
+
+    if(dist < 0.12 && ball.x() > rb.x() && rb.x() < -0.6 && ball.y() <= top_limit && ball.y() >=-top_limit && lado == 1){
+        vaiPara(rb,ball.x(),ball.y(),id);
+    }else if(dist < 0.12 && ball.x() < rb.x() && rb.x() > 0.6 && ball.y() <= top_limit && ball.y() >=-top_limit && lado == -1){
+        vaiPara(rb,ball.x(),ball.y(),id);
+    }else{
+        //Verifica se o robô está perto do centro do gol
+        if(distancia(rb,x_desejado,rb.y()) >= 0.02){
+
+            if(distancia(rb,x_desejado,rb.y()) >= 0.3){
+                  vaiPara_desviando(rb,x_desejado,0.0,id);
+            }else{
+                  vaiPara(rb,x_desejado,0.0,id);
+            }
+
+        }else{
+
+            ang_err angulo = olhar(rb,rb.x(),top_limit + 5); // calcula diferença entre angulo atual e angulo desejado
+            if(angulo.fi >= 0.5 || angulo.fi<= -0.5){ //se o robô não está aproximadamente 90 graus
+                andarFrente(0,id);
+                VW[id][1] = controleAngular(angulo.fi);
+            }
+
+            else if(rb.y() < top_limit && rb.y() < new_pos[1]){ //robô abaixo da bola
+
+                if(angulo.flag == 1){
+                    andarFrente(125,id);
+                }
+                else{
+                    andarFundo(125,id);
+                }
+            }
+            else if(rb.y() > -top_limit && rb.y() > new_pos[1]){ //robô acima da bola
+                if(angulo.flag == 1){
+                    andarFundo(125,id);
+                }
+                else{
+                    andarFrente(125,id);
+                }
+            }
+            else{
+                andarFrente(0,id);
+            }
+            //gira se a bola estiver muito perto do goleiro
+            if (distancia(rb,ball.x(),ball.y()) < 0.08){
+                if((ball.y() < rb.y() && lado == 1)){
+                   girarHorario(125,id);
+                }
+                if((ball.y() > rb.y() && lado == -1)){
+                   girarHorario(125,id);
+                }
+                if((ball.y() > rb.y() && lado == 1)){
+                   girarAntihorario(125,id);
+                }
+                if((ball.y() < rb.y() && lado == -1)){
+                   girarAntihorario(125,id);
+                }
+            }
+        }
+    }
+
+}
