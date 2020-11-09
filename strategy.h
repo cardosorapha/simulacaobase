@@ -80,6 +80,8 @@ class Strategy {
 
     int lado;
 
+    bool bandeira = true;
+
     void strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                       fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2
                      ,fira_message::Ball ball, const fira_message::Field & field,string);
@@ -118,6 +120,8 @@ class Strategy {
     void zagueiro2(fira_message::Robot, double, double, int);
     void calc_repulsao2(fira_message::Robot rb,double F[]);
     void atacante_todos(Team my,Team adv, fira_message::Ball ball, int id, int idzag);
+    void FIRE_KICK(int idRobot);
+    void chute(int idRobot, int sinal);
     void vaiPara_desviando2(fira_message::Robot,double,double,int);
 
     //Atributos para zagueiro_cone
