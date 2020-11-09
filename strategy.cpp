@@ -1045,7 +1045,7 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
     double x_radius = 0.2*lado; //raio do circulo do meio de campo
     double y_top = 0.65; // metade da largura do campo
     double ala_deepth = 0.35; //metade da área do goleiro
-    double K_press = 0.2*lado;
+    double K_press = 0.3*lado; //ṕonto entre meio de campo e marca do penalti
     double ajuste = 0.15; //ajuste de lugar onde o zagueiro, quando a bola está proximo do escanteio do seu time
     double ajuste2 = 0.2; //ajuste de distância que o zagueiro deve estar para ir na bola no campo de ataque
     int teste = 0; //armazena se entrou no else
@@ -1053,7 +1053,7 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         //lado azul
         if(xbola > x_penalti)
         {    //Se a Bola estiver na zona "A"
-            vaiPara_desviando(rb,x_meio_de_campo + K_press + 0.1,ybola,id);
+            vaiPara_desviando(rb,x_meio_de_campo + K_press,ybola,id);
             if((distancia(rb,xbola,ybola)< ajuste2) && rb.x() < xbola){
                 //Se o robo estiver perto da bola e atrás dela
                 vaiPara(rb,predictedBall.x,predictedBall.y,id);
@@ -1077,11 +1077,11 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         }
         else if((xbola < x_meio_de_campo && ybola > (y_top - ala_deepth +ajuste)))
         {   //Se a Bola estiver na zona "D"
-            vaiPara_desviando(rb,predictedBall.x,y_top - ala_deepth + ajuste,id);
+            vaiPara_desviando(rb,xbola,y_top - ala_deepth + ajuste,id);
         }
         else if((xbola < x_meio_de_campo) && ybola < (ala_deepth - y_top  -ajuste))
         {    //Se a Bola estiver na zona "E"
-            vaiPara_desviando(rb,predictedBall.x,ala_deepth - y_top - ajuste,id);
+            vaiPara_desviando(rb,xbola,ala_deepth - y_top - ajuste,id);
         }
         else // se não estiver em nenhuma das regiôes
         {
@@ -1104,7 +1104,7 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         //lado amarelo
         if(xbola < x_penalti)
         {    //Se a Bola estiver na zona "A"
-            vaiPara_desviando(rb,x_meio_de_campo + K_press - 0.1,ybola,id);
+            vaiPara_desviando(rb,x_meio_de_campo + K_press,ybola,id);
             if((distancia(rb,xbola,ybola)< ajuste2) && rb.x() > xbola){
                 //Se o robo estiver perto da bola e atrás dela
                 vaiPara(rb,predictedBall.x,predictedBall.y,id);
@@ -1128,11 +1128,11 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
         }
         else if((xbola > x_meio_de_campo && ybola > (y_top - ala_deepth +ajuste)))
         {   //Se a Bola estiver na zona "D"
-            vaiPara_desviando(rb,predictedBall.x,y_top - ala_deepth + ajuste,id);
+            vaiPara_desviando(rb,xbola,y_top - ala_deepth + ajuste,id);
         }
         else if((xbola > x_meio_de_campo) && ybola < (ala_deepth - y_top  -ajuste))
         {    //Se a Bola estiver na zona "E"
-            vaiPara_desviando(rb,predictedBall.x,ala_deepth - y_top - ajuste,id);
+            vaiPara_desviando(rb,xbola,ala_deepth - y_top - ajuste,id);
         }
         else // se não estiver em nenhuma das regiôes
         {
