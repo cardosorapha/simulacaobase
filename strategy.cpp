@@ -985,7 +985,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     vaiPara_desviando(rb[id],attachX,attachY,id);
                 }
                 else
-                    vaiPara_desviando(rb[id],0.15,(*resultante_2)[1]-0.1,id);
+                    vaiPara_desviando(rb[id],0.10,(*resultante_2)[1]-0.1,id);
 
             }else
             {
@@ -1146,7 +1146,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     vaiPara_desviando(rb[id],attachX,attachY,id);
                 }
                 else
-                    vaiPara_desviando(rb[id],-0.15,(*resultante_2)[1],id);
+                    vaiPara_desviando(rb[id],-0.10,(*resultante_2)[1],id);
 
             }else
             {
