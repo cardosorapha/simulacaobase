@@ -15,7 +15,7 @@
 
 #include <iostream>
 #include <sstream>
-
+#include <iomanip>
 #include "net/vssclient.h"
 
 QString getFoulNameById(VSSRef::Foul foul){
@@ -297,7 +297,7 @@ int main(int argc, char *argv[]){
                    if(cor == "BLUE"){
                        double x[3] = {0.7,0.3,0.3};
                        double y[3] = {0,-0.3,0.3};
-                       double ori[3] = {0,0,0};
+                       double ori[3] = {90,0,0};
                        reposicionar_amarelo(x,y,ori,replacerSocket);
                    }
                    if(cor == "YELLOW"){
@@ -309,6 +309,10 @@ int main(int argc, char *argv[]){
                }
 
                if(ultimo_comando == "PENALTY_KICK"){
+                   double sorteio = rand()%36 - 18;
+                   double pos_gol = sorteio/100;
+                   double orientacao = atan2(pos_gol,-0.5);
+                   orientacao = orientacao*180/M_PI;
                    if(cor == "BLUE"){
                        double x[3] = {0.7,-0.05,-0.05};
                        double y[3] = {0,-0.3,0.3};
@@ -318,7 +322,7 @@ int main(int argc, char *argv[]){
                    if(cor == "YELLOW"){
                        double x[3] = {0.7,0.05,-0.3};
                        double y[3] = {0,0,0};
-                       double ori[3] = {90,0,0};
+                       double ori[3] = {90,0,orientacao};
                        reposicionar_amarelo(x,y,ori,replacerSocket);
                    }
                }
@@ -370,7 +374,7 @@ int main(int argc, char *argv[]){
                    if(cor == "BLUE"){
                        double x[3] = {-0.7,-0.3,-0.3};
                        double y[3] = {0,-0.3,0.3};
-                       double ori[3] = {90,0,0};
+                       double ori[3] = {0,0,0};
                        reposicionar_azul(x,y,ori,replacerSocket);
                    }
                    if(cor == "YELLOW"){
@@ -382,10 +386,14 @@ int main(int argc, char *argv[]){
                }
 
                if(ultimo_comando == "PENALTY_KICK"){
+                   double sorteio = rand()%36 - 18;
+                   double pos_gol = sorteio/100;
+                   double orientacao = atan2(pos_gol,0.5);
+                   orientacao = orientacao*180/M_PI;
                    if(cor == "BLUE"){
                        double x[3] = {-0.7,-0.05,0.3};
                        double y[3] = {0,0,0};
-                       double ori[3] = {90,0,0};
+                       double ori[3] = {90,0,orientacao};
                        reposicionar_azul(x,y,ori,replacerSocket);
                    }
                    if(cor == "YELLOW"){
