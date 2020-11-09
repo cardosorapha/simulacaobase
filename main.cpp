@@ -309,10 +309,10 @@ int main(int argc, char *argv[]){
                }
 
                if(ultimo_comando == "PENALTY_KICK"){
-                   double sorteio = rand()%36 - 18;
-                   double pos_gol = sorteio/100;
-                   double orientacao = atan2(pos_gol,-0.5);
-                   orientacao = orientacao*180/M_PI;
+                   double gol[4] = {25,15,-15,-25};
+                   int sorteio = rand()%4 ;
+                   double orientacao = gol[sorteio];
+                   cout<<sorteio<<"  "<<orientacao<<endl;
                    if(cor == "BLUE"){
                        double x[3] = {0.7,-0.05,-0.05};
                        double y[3] = {0,-0.3,0.3};
@@ -386,10 +386,10 @@ int main(int argc, char *argv[]){
                }
 
                if(ultimo_comando == "PENALTY_KICK"){
-                   double sorteio = rand()%36 - 18;
-                   double pos_gol = sorteio/100;
-                   double orientacao = atan2(pos_gol,0.5);
-                   orientacao = orientacao*180/M_PI;
+                   double gol[4] = {25,15,-15,-25};
+                   int sorteio = rand()%4 ;
+                   double orientacao = gol[sorteio];
+                   cout<<sorteio<<"  "<<orientacao<<endl;
                    if(cor == "BLUE"){
                        double x[3] = {-0.7,-0.05,0.3};
                        double y[3] = {0,0,0};
@@ -468,3 +468,4 @@ int main(int argc, char *argv[]){
     }
     return 0;
 }
+
