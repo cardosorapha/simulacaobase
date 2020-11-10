@@ -111,7 +111,8 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
                              fira_message::Robot y0, fira_message::Robot y1,fira_message::Robot y2,
                              fira_message::Ball ball, const fira_message::Field & field,string sit_juiz)
 {
-   Team blue(b0,b1,b2);
+
+    Team blue(b0,b1,b2);
    Team yellow(y0,y1,y2);
 
     double dist1 = sqrt(pow(b1.x()-ball.x(),2)+pow(b1.y()-ball.y(),2));
@@ -144,6 +145,7 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
                                fira_message::Robot b0, fira_message::Robot b1,fira_message::Robot b2,
                                fira_message::Ball ball, const fira_message::Field & field,string sit_juiz)
 {
+
     Team blue(b0,b1,b2);
     Team yellow(y0,y1,y2);
 
@@ -575,7 +577,6 @@ void Strategy::goleiro_petersson(fira_message::Robot rb,fira_message::Ball ball,
             }
         }
     }
-
 }
 
 void Strategy::vaiPara_desviando(fira_message::Robot rb,double px,double py,int id){
@@ -1180,6 +1181,48 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
                 if((ball.y() < rb.y() && lado == -1)){
                    girarAntihorario(125,id);
                 }
+            }
+        }
+    }
+    double lim_x[2] = {0.58,0.75};
+    double lim_y[2] = {0.17,0.38};
+    //lim_x = 0.75 e 0.6 lim_y 0.2 0.35
+    //azul
+    if ((lado == 1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)){
+        if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() < rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
+            }
+        }
+        if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() <= lim_y[1]) && (ball.y() >= lim_y[0])){
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() < rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
+            }
+        }
+    //amarelo
+    }else if ((lado == -1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)){
+        if((ball.x() <= lim_x[1]) && (ball.x() >= lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() > rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
+            }
+        }
+        if((ball.x() <= lim_x[1]) && (ball.x() >= lim_x[0]) && (ball.y() <= lim_y[1]) && (ball.y() >= lim_y[0])){
+           // vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() > rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
             }
         }
     }
