@@ -108,6 +108,7 @@ class Strategy {
     double velocidades_amarelo[3][2];
 
     void saturacao(double V[]);
+    void saturacao(vector <double> *V); //Overload
     void atualiza_pos(fira_message::Robot b0,fira_message::Robot b1,fira_message::Robot b2,fira_message::Robot y0,fira_message::Robot y1,fira_message::Robot y2);
     void calc_repulsao(fira_message::Robot rb, double F[]);
     void converte_vetor(double V[],double);

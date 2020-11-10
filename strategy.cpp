@@ -449,6 +449,25 @@ void Strategy::saturacao(double V[]){
         V[1] = -lim_y;
 }
 
+void Strategy::saturacao(vector <double> *V){
+    //limites de x e y
+    double lim_x = 0.68;
+    double lim_y = 0.58;
+
+    //Satura as posições enviadas
+    if (V->at(0) > lim_x)
+        V->at(0) = lim_x;
+
+    if (V->at(0) < -lim_x)
+        V->at(0) = -lim_x;
+
+    if (V->at(1) > lim_y)
+        V->at(1) = lim_y;
+
+    if (V->at(1) < -lim_y)
+        V->at(1) = -lim_y;
+}
+
 //Atualiza a estrutura de dados contendo as posições de todos os robôs
 void Strategy::atualiza_pos(fira_message::Robot b0,fira_message::Robot b1,fira_message::Robot b2,fira_message::Robot y0,fira_message::Robot y1,fira_message::Robot y2){
     Strategy::pos_robos[0][0] = b0.x();
@@ -886,7 +905,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                 //a = 1;
 
             int c = 0;
-            if((ball.x()/rb[id].x()<1 && ball.x()/rb[id].x()>0.8) && abs(ball.y()-rb[id].y()) > 0.1)
+            if((ball.x()/rb[id].x()<1 && predictedBall.x/rb[id].x()>0.8) && abs(predictedBall.y-rb[id].y()) > 0.1)
                 c = 1;
 
             double repulsivoX;
@@ -946,6 +965,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
 
         }
 
+        saturacao(resultante_2);
 
         if(ball.x()==0)
         {
@@ -1025,12 +1045,12 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     vaiPara(rb[id],(*resultante_2)[0],(*resultante_2)[1],id);
                     //chute(id,1);
                 }
-                else if((ball.y()>0.55 && ball.x()>0.7) && (dist < 0.08))
-                {
-                    chute(id,1);
-                }else if((ball.y()<-0.55 && ball.x()>0.7) && (dist < 0.08))
+                else if((ball.y()>0.55 && ball.x()>0.65) && (dist < 0.08))
                 {
                     chute(id,-1);
+                }else if((ball.y()<-0.55 && ball.x()>0.65) && (dist < 0.08))
+                {
+                    chute(id,1);
                 }
 
             }
@@ -1046,7 +1066,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                 //a = 1;
 
             int c = 0;
-            if((ball.x()/rb[id].x()<1.1 && ball.x()/rb[id].x()>1)&&abs(ball.y()-rb[id].y()) > 0.1)
+            if((ball.x()/rb[id].x()<1.1 && predictedBall.x/rb[id].x()>1)&&abs(predictedBall.y-rb[id].y()) > 0.1)
                 c = 1;
 
             double repulsivoX;
@@ -1103,6 +1123,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
 
         }
 
+        saturacao(resultante_2);
 
         if(ball.x()==0)
         {
@@ -1182,12 +1203,12 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     vaiPara(rb[id],(*resultante_2)[0],(*resultante_2)[1],id);
                     //chute(id,1);
                 }
-                else if((ball.y()>0.55 && ball.x()<-0.7) && (dist < 0.08))
-                {
-                    chute(id,-1);
-                }else if((ball.y()<-0.55 && ball.x()<-0.7) && (dist < 0.08))
+                else if((ball.y()>0.55 && ball.x()<-0.65) && (dist < 0.08))
                 {
                     chute(id,1);
+                }else if((ball.y()<-0.55 && ball.x()<-0.65) && (dist < 0.08))
+                {
+                    chute(id,-1);
                 }
 
 
@@ -1207,7 +1228,7 @@ void Strategy::FIRE_KICK(int idRobot)
 void Strategy::chute(int idRobot, int sinal)
 {
     VW[idRobot][0] = 0;
-    VW[idRobot][1] = 2.5*sinal;
+    VW[idRobot][1] = 20*sinal;
 }
 
 
@@ -1282,6 +1303,48 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
                 if((ball.y() < rb.y() && lado == -1)){
                    girarAntihorario(125,id);
                 }
+            }
+        }
+    }
+    double lim_x[2] = {0.58,0.75};
+    double lim_y[2] = {0.17,0.38};
+    //lim_x = 0.75 e 0.6 lim_y 0.2 0.35
+    //azul
+    if ((lado == 1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)){
+        if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() < rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
+            }
+        }
+        if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() <= lim_y[1]) && (ball.y() >= lim_y[0])){
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() < rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
+            }
+        }
+    //amarelo
+    }else if ((lado == -1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)){
+        if((ball.x() <= lim_x[1]) && (ball.x() >= lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            //vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() > rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
+            }
+        }
+        if((ball.x() <= lim_x[1]) && (ball.x() >= lim_x[0]) && (ball.y() <= lim_y[1]) && (ball.y() >= lim_y[0])){
+           // vaiPara(rb,ball.x(),ball.y(),id);
+            if(ball.y() > rb.y()){
+               girarHorario(125,id);
+            }else{
+               girarAntihorario(125,id);
             }
         }
     }
