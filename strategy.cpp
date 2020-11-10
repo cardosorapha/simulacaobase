@@ -113,9 +113,18 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
 {
    Team blue(b0,b1,b2);
    Team yellow(y0,y1,y2);
+   double dist1, dist2;
 
-    double dist1 = sqrt(pow(b1.x()-ball.x(),2)+pow(b1.y()-ball.y(),2));
-    double dist2 = sqrt(pow(b2.x()-ball.x(),2)+pow(b2.y()-ball.y(),2));
+    if (ball.x()<0.65)
+    {
+        dist1 = sqrt(pow(b1.x()-ball.x(),2)+pow(b1.y()-ball.y(),2));
+        dist2 = sqrt(pow(b2.x()-ball.x(),2)+pow(b2.y()-ball.y(),2));
+    }
+    else //Se a bola estiver na banheira, a distância >y< importa mais
+    {
+        dist1 = sqrt(pow(b1.x()-ball.x(),2)+4*pow(b1.y()-ball.y(),2));
+        dist2 = sqrt(pow(b2.x()-ball.x(),2)+4*pow(b2.y()-ball.y(),2));
+    }
 
     if(sit_juiz == "GAME_ON"){
          goleiro_petersson2(b0,ball,0);
@@ -146,9 +155,18 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
 {
     Team blue(b0,b1,b2);
     Team yellow(y0,y1,y2);
+    double dist1, dist2;
 
-    double dist1 = sqrt(pow(y1.x()-ball.x(),2)+pow(y1.y()-ball.y(),2));
-    double dist2 = sqrt(pow(y2.x()-ball.x(),2)+pow(y2.y()-ball.y(),2));
+    if (ball.x()>-0.65)
+    {
+        dist1 = sqrt(pow(y1.x()-ball.x(),2)+pow(y1.y()-ball.y(),2));
+        dist2 = sqrt(pow(y2.x()-ball.x(),2)+pow(y2.y()-ball.y(),2));
+    }
+    else //Se a bola estiver na banheira, a distância >y< importa mais
+    {
+        dist1 = sqrt(pow(y1.x()-ball.x(),2)+4*pow(y1.y()-ball.y(),2));
+        dist2 = sqrt(pow(y2.x()-ball.x(),2)+4*pow(y2.y()-ball.y(),2));
+    }
 
     if(sit_juiz == "GAME_ON"){
 
@@ -901,12 +919,18 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
         {
             int a = 0;
             //Consideração do vetor de predição
-            //if(abs(ball.y()-rb[id].y()) > 0.3)
-                //a = 1;
+            if(abs(ball.y()-rb[id].y()) > 0.3)
+                a = 1;
+            else if(abs(ball.y()-rb[id].y()) < 0.06 && dist < 0.2)
+            {
+                (*resultante_2)[0]=rb[id].x();
+                (*resultante_2)[1]=rb[id].y();
+            }
 
             int c = 0;
-            if((ball.x()/rb[id].x()<1 && predictedBall.x/rb[id].x()>0.8) && abs(predictedBall.y-rb[id].y()) > 0.1)
+            if((ball.x()/rb[id].x()<1 && ball.x()/rb[id].x()>0.8) && abs(ball.y()-rb[id].y()) > 0.1)
                 c = 1;
+
 
             double repulsivoX;
             double repulsivoY;
@@ -920,7 +944,6 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                 repulsivoX = (c*0.1+0.1)*sin(M_PI-(c*0.5*M_PI));
                 repulsivoY = (c*0.1+0.1)*cos(M_PI-(c*0.5*M_PI));
             }
-
             //Componentes do Vetor direção
             double angle = atan2(ball.x()-predictedBall.x,ball.y()-predictedBall.y);
             componenteX = /*-c*ball.x()*/ -  a*0.1*sin(angle) - repulsivoX;
@@ -1040,10 +1063,14 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     bandeira = true;
                 }*/
 
-                if(ball.x() > 0.65 && rb[id].x() > 0.65 && dist < 0.08 && (ball.y() < 0.25 && ball.y() > -0.25))
+                if(ball.x() > 0.65 && rb[id].x() > 0.65 && dist < 0.08 && (ball.y() < 0.18 && ball.y() > -0.18)&& rb[id].y()>ball.y())
                 {
-                    vaiPara(rb[id],(*resultante_2)[0],(*resultante_2)[1],id);
-                    //chute(id,1);
+                    //vaiPara(rb[id],(*resultante_2)[0],(*resultante_2)[1],id);
+                    chute(id,1);
+
+                }else if(ball.x() > 0.65 && rb[id].x() > 0.65 && dist < 0.08 && (ball.y() < 0.18 && ball.y() > -0.18)&& rb[id].y()<ball.y())
+                {
+                    chute(id,-1);
                 }
                 else if((ball.y()>0.55 && ball.x()>0.65) && (dist < 0.08))
                 {
@@ -1062,11 +1089,17 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
         {
             int a = 0;
             //Consideração do vetor de predição
-            //if(abs(ball.y()-rb[id].y()) > 0.3)
-                //a = 1;
+            if(abs(ball.y()-rb[id].y()) > 0.3)
+                a = 1;
+            else if(abs(ball.y()-rb[id].y()) < 0.06 && dist < 0.2)
+            {
+                (*resultante_2)[0]=rb[id].x();
+                (*resultante_2)[1]=rb[id].y();
+            }
+
 
             int c = 0;
-            if((ball.x()/rb[id].x()<1.1 && predictedBall.x/rb[id].x()>1)&&abs(predictedBall.y-rb[id].y()) > 0.1)
+            if((ball.x()/rb[id].x()<1.1 && ball.x()/rb[id].x()>1)&&abs(ball.y()-rb[id].y()) > 0.1)
                 c = 1;
 
             double repulsivoX;
@@ -1198,10 +1231,14 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     bandeira = true;
                 }*/
 
-                if((ball.x() < -0.65 && rb[id].x() < -0.65 && dist < 0.08 && (ball.y() < 0.25 && ball.y() > -0.25)))
+                if(ball.x() < -0.65 && rb[id].x() < -0.65 && dist < 0.08 && (ball.y() < 0.18 && ball.y() > -0.18)&& rb[id].y()>ball.y())
                 {
-                    vaiPara(rb[id],(*resultante_2)[0],(*resultante_2)[1],id);
-                    //chute(id,1);
+                    //vaiPara(rb[id],(*resultante_2)[0],(*resultante_2)[1],id);
+                    chute(id,-1);
+
+                }else if(ball.x() < -0.65 && rb[id].x() < -0.65 && dist < 0.08 && (ball.y() < 0.18 && ball.y() > -0.18)&& rb[id].y()<ball.y())
+                {
+                    chute(id,1);
                 }
                 else if((ball.y()>0.55 && ball.x()<-0.65) && (dist < 0.08))
                 {
