@@ -961,29 +961,32 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                 (*resultante_2)[1]+=-gain*cos(beta+M_PI);
             }
 
+            else{
+                if((ball.x() < 0.6 && ball.y() < -0.2)&& (rb[id].y() > ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+                {
+                    //Vetor de corrção
+                    componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
 
-            if((ball.x() < 0.6 && ball.y() < -0.2)&& (rb[id].y() > ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
-            {
-                //Vetor de corrção
-                componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
-                componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    (*resultante_2)[0]+=componenteX;
+                    (*resultante_2)[1]+=componenteY;
 
-                (*resultante_2)[0]+=componenteX;
-                (*resultante_2)[1]+=componenteY;
+                }
+                else if((ball.x() < 0.6 && ball.y() > 0.2)&&(rb[id].y() < ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+                {
+                    //Vetor de corrção
+                    componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
 
-            }else if((ball.x() < 0.6 && ball.y() > 0.2)&&(rb[id].y() < ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
-            {
-                //Vetor de corrção
-                componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
-                componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    (*resultante_2)[0]+=componenteX;
+                    (*resultante_2)[1]+=componenteY;
 
-                (*resultante_2)[0]+=componenteX;
-                (*resultante_2)[1]+=componenteY;
-
-            }else if(dist > 0.2)
-            {
-                (*resultante_2)[0]+= -0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0));
-                (*resultante_2)[1]+= -0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0));
+                }
+                else if(dist > 0.2)
+                {
+                    (*resultante_2)[0]+= -0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0));
+                    (*resultante_2)[1]+= -0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0));
+                }
             }
 
         }
@@ -1080,6 +1083,7 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                     chute(id,1);
                 }
 
+
             }
         }
 
@@ -1130,28 +1134,30 @@ void Strategy::atacante_todos(Team rb,Team adversario, fira_message::Ball ball, 
                 (*resultante_2)[0]+=-gain*sin(beta+M_PI);
                 (*resultante_2)[1]+=-gain*cos(beta+M_PI);
             }
-
-            if((ball.x() > -0.6 && ball.y() < -0.2)&& (rb[id].y() > ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+            else
             {
-                //Vetor de corrção
-                componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
-                componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                if((ball.x() > -0.6 && ball.y() < -0.2)&& (rb[id].y() > ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+                {
+                    //Vetor de corrção
+                    componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
 
-                (*resultante_2)[0]+=componenteX;
-                (*resultante_2)[1]+=componenteY;
-            }else if((ball.x() > -0.6 && ball.y() > 0.2)&&(rb[id].y() < ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
-            {
-                //Vetor de corrção
-                componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
-                componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    (*resultante_2)[0]+=componenteX;
+                    (*resultante_2)[1]+=componenteY;
+                }else if((ball.x() > -0.6 && ball.y() > 0.2)&&(rb[id].y() < ball.y())/*&&(abs(ball.y()-blue[id].x())>0.07)*/)
+                {
+                    //Vetor de corrção
+                    componenteX = /*ball.x()*/ -  0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
+                    componenteY = /*ball.y()*/ -  0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0)/*+M_PI*/);
 
-                (*resultante_2)[0]+=componenteX;
-                (*resultante_2)[1]+=componenteY;
+                    (*resultante_2)[0]+=componenteX;
+                    (*resultante_2)[1]+=componenteY;
 
-            }else if(dist > 0.2)
-            {
-                (*resultante_2)[0]+= -0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0));
-                (*resultante_2)[1]+= -0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0));
+                }else if(dist > 0.2)
+                {
+                    (*resultante_2)[0]+= -0.1*sin(atan2(ball.x() - meioGolx,ball.y() - 0.0));
+                    (*resultante_2)[1]+= -0.1*cos(atan2(ball.x() - meioGolx,ball.y() - 0.0));
+                }
             }
 
         }
