@@ -718,7 +718,18 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
            }
            else // se não estiver em nenhuma das regiôes
            {
-               vaiPara_desviando2(rb,-x_penalti -0.1, 0.0,id);
+               if (ybola>0.15)
+               {
+                   vaiPara(rb,-x_penalti - 0.1, 0.15,id);
+               }
+               else if (ybola<-0.15)
+               {
+                   vaiPara(rb,-x_penalti - 0.1, -0.15,id);
+               }
+               else
+               {
+                   vaiPara_desviando2(rb,-x_penalti - 0.1, 0,id);
+               }
                teste = 1; //entrou aqui
                /*if(sqrt( pow((-x_penalti -0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
                    vaiPara_desviando(rb,-x_penalti +0.1, 0.0,id);
@@ -783,7 +794,19 @@ void Strategy::zagueiro2(fira_message::Robot rb, double xbola, double ybola, int
            }
            else // se não estiver em nenhuma das regiôes
            {
-               vaiPara_desviando2(rb,-x_penalti +0.1, 0.0,id);
+               if (ybola>0.15)
+               {
+                   vaiPara(rb,-x_penalti + 0.1, 0.15,id);
+               }
+               else if (ybola<-0.15)
+               {
+                   vaiPara(rb,-x_penalti + 0.1, -0.15,id);
+               }
+               else
+               {
+                   vaiPara_desviando2(rb,-x_penalti + 0.1, 0,id);
+               }
+
                teste = 1;
                /*if(sqrt( pow((-x_penalti +0.1 -predictedBall.x),2) + pow((0.0 - predictedBall.y),2) ) < 0.2){
                    vaiPara_desviando(rb,-x_penalti -0.1, 0.0,id);
