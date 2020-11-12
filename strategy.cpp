@@ -13,8 +13,8 @@ Strategy::Strategy(bool time)
     }
 
     qtdRobos = 3;
-    vrMax = 125;
-    Vmax = 2.5;
+    vrMax = 200; // era 125
+    Vmax = 2.5; // era 2.5
     Wmax = 62.5;
 
     for(int i = 0; i < qtdRobos; i++)
@@ -128,11 +128,13 @@ void Strategy::strategy_blue(fira_message::Robot b0, fira_message::Robot b1,fira
 
     if(sit_juiz == "GAME_ON"){
          goleiro_petersson2(b0,ball,0);
-         if(ball.x() > -0.1){
+         if((ball.x() > -0.1)&&((dist1>0.15)||(dist2>0.15))){
              if (dist1 > dist2){
+                 cout<<"config 1"<<endl;
                  zagueiro2(b1,ball,1);
                  atacante_todos(blue,yellow,ball,2,1);
              }else{
+                 cout<<"config 2"<<endl;
                  zagueiro2(b2,ball,2);
                  atacante_todos(blue,yellow,ball,1,2);
              }
@@ -171,7 +173,7 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
     if(sit_juiz == "GAME_ON"){
 
         goleiro_petersson2(y0,ball,0);
-         if(ball.x() < 0.1){
+         if((ball.x() < 0.1)&&((dist1>0.15)||(dist2>0.15))){
              if (dist1 > dist2){
                  zagueiro2(y1,ball,1);
                  atacante_todos(yellow,blue,ball,2,1);
@@ -196,7 +198,7 @@ void Strategy::strategy_yellow(fira_message::Robot y0, fira_message::Robot y1,fi
 //Calcula as velocidades a serem enviadas ao robô, utilizando cinematica inversa
 void Strategy::cinematica_azul()
 {
-    double k[] = {1,0.7,0.7};
+    double k[] = {1,0.6,0.6};
 
     for(int i = 0; i < qtdRobos; i++)
     {
@@ -227,7 +229,7 @@ void Strategy::andarFrente(double vel, int id)
 }
 void Strategy::cinematica_amarelo()
 {
-    double k[] = {1,0.7,0.7};
+    double k[] = {1,0.6,0.6};
     for(int i = 0; i < qtdRobos; i++)
     {
         vRL[i][0] = (VW[i][0]+VW[i][1]*L)/R;
@@ -1454,7 +1456,7 @@ void Strategy::FIRE_KICK(fira_message::Robot rb,fira_message::Ball ball, int id)
     flag_lateral = (((lado==-1)&&(rb.x()>ball.x()))||((lado==1)&&(rb.x()<ball.x())));
     double x = distancia(rb,ball.x(),ball.y());
 
-    lim_ang = atan2(sqrt(0.03*(1-(x*x/4))),x); //elipse era 0.06
+    lim_ang = cos(x)*atan2(sqrt(0.04*(1-(x*x/4))),x); //elipse era 0.06
     //lim_ang = 1.57-1.47*x;
     //cout << "ID: "<< id << "lim_ang: "<<lim_ang <<endl;
 
