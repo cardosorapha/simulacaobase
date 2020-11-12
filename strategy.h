@@ -118,12 +118,12 @@ class Strategy {
     void goleiro_petersson(fira_message::Robot,fira_message::Ball,int);
     void goleiro_petersson2(fira_message::Robot,fira_message::Ball,int);
     void chute(int);
-    void zagueiro2(fira_message::Robot, double, double, int);
+    void zagueiro2(fira_message::Robot rb, fira_message::Ball ball, int id);
     void calc_repulsao2(fira_message::Robot rb,double F[]);
     void atacante_todos(Team my,Team adv, fira_message::Ball ball, int id, int idzag);
-    void FIRE_KICK(int idRobot);
     void chute(int idRobot, int sinal);
     void vaiPara_desviando2(fira_message::Robot,double,double,int);
+    void FIRE_KICK(fira_message::Robot rb,fira_message::Ball ball, int id);
 
     //Atributos para zagueiro_cone
      vector<pair<double,double>>* componentes = NULL;
