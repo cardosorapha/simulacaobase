@@ -258,14 +258,14 @@ int main(int argc, char *argv[]){
                      double ori[3] = {90 , 0 , 0};
 
                      if(quadrante == "QUADRANT 1"){
-                         x[2] = 0.53;
-                         y[2] = 0.3;
-                         ori[2] = 135;
+                         x[2] = 0.59;
+                         y[2] = 0.4;
+                         ori[2] = 185;
                      }
                      if(quadrante == "QUADRANT 4"){
-                         x[2] = 0.53;
-                         y[2] = -0.3;
-                         ori[2] = 225;
+                         x[2] = 0.59;
+                         y[2] = -0.4;
+                         ori[2] = 175;
                      }
                      if(quadrante == "QUADRANT 2"){
                          x[2] = -0.18;
@@ -348,14 +348,14 @@ int main(int argc, char *argv[]){
                            y[2] = -0.4;
                        }
                        if(quadrante == "QUADRANT 2"){
-                           x[2] = -0.53;
-                           y[2] = 0.3;
-                           ori[2] = 45;
+                           x[2] = -0.59;
+                           y[2] = 0.4;
+                           ori[2] = -5;
                        }
                        if(quadrante == "QUADRANT 3"){
-                           x[2] = -0.53;
-                           y[2] = -0.3;
-                           ori[2] = -45;
+                           x[2] = -0.59;
+                           y[2] = -0.4;
+                           ori[2] = 5;
                        }
                        reposicionar_azul(x,y,ori,replacerSocket);
                }
