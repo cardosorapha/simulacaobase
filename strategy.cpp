@@ -1317,6 +1317,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
 
     double top_limit = 0.17; //largura do gol/2
     double x_desejado = -0.7*lado;
+    double delta = 0.02; // pra impedir que ele fique sambando parado no gol
 
     double dist = distancia(rb,ball.x(),ball.y());
     vector <double> new_pos = {0,0};
@@ -1350,7 +1351,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
                 VW[id][1] = controleAngular(angulo.fi);
             }
 
-            else if(rb.y() < top_limit && rb.y() < new_pos[1]){ //robô abaixo da bola
+            else if(rb.y() < top_limit && rb.y() + delta < new_pos[1]){ //robô abaixo da bola
 
                 if(angulo.flag == 1){
                     andarFrente(125,id);
@@ -1359,7 +1360,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
                     andarFundo(125,id);
                 }
             }
-            else if(rb.y() > -top_limit && rb.y() > new_pos[1]){ //robô acima da bola
+            else if(rb.y() > -top_limit && rb.y() - delta > new_pos[1]){ //robô acima da bola
                 if(angulo.flag == 1){
                     andarFundo(125,id);
                 }
