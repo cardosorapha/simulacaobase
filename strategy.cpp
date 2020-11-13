@@ -1319,7 +1319,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
 
     double top_limit = 0.17; //largura do gol/2
     double x_desejado = -0.7*lado;
-    double delta = 0.02; // pra impedir que ele fique sambando parado no gol
+    double delta = 0.01; // pra impedir que ele fique sambando parado no gol
     double velocidade = 2.5;
     double dist = distancia(rb,ball.x(),ball.y());
     vector <double> new_pos = {0,0};
