@@ -296,8 +296,6 @@ int main(int argc, char *argv[]){
                if(ultimo_comando == "GOAL_KICK"){
                    //posição da bola = 0.6,0.35
                    //posição goleiro = 0.65, 0.3
-                   int sorteio = rand()%2;
-                   double pos_goleiro[2][3] = {{0.64,0.31,-45},{0.64,-0.31,45}};
                    if(cor == "BLUE"){
                        double x[3] = {0.7,-0.2,-0.2};
                        double y[3] = {0,-0.4,0.4};
@@ -305,9 +303,9 @@ int main(int argc, char *argv[]){
                        reposicionar_amarelo(x,y,ori,replacerSocket);
                    }
                    if(cor == "YELLOW"){
-                       double x[3] = {pos_goleiro[sorteio][0],0.3,0.3};
-                       double y[3] = {pos_goleiro[sorteio][1],-0.3,0.3};
-                       double ori[3] = {pos_goleiro[sorteio][2],0,0};
+                       double x[3] = {0.7,0.67,0.67};
+                       double y[3] = {0,-0.37,0.37};
+                       double ori[3] = {90,165,195};
                        reposicionar_amarelo(x,y,ori,replacerSocket);
 
                    }
@@ -378,12 +376,11 @@ int main(int argc, char *argv[]){
                if(ultimo_comando == "GOAL_KICK"){
                    //posição da bola = 0.6,0.35
                    //posição goleiro = 0.65, 0.3
-                   int sorteio = rand()%2;
-                   double pos_goleiro[2][3] = {{-0.64,0.31,45},{-0.64,-0.31,-45}};
+
                    if(cor == "BLUE"){
-                       double x[3] = {pos_goleiro[sorteio][0],-0.3,-0.3};
-                       double y[3] = {pos_goleiro[sorteio][1],-0.3,0.3};
-                       double ori[3] = {pos_goleiro[sorteio][2],0,0};
+                       double x[3] = {-0.7,-0.67,-0.67};
+                       double y[3] = {0,-0.37,0.37};
+                       double ori[3] = {90,195,165};
                        reposicionar_azul(x,y,ori,replacerSocket);
 
                    }
