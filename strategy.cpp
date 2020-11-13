@@ -1407,7 +1407,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
     double lim_y[2] = {0.17,0.38};
     //lim_x = 0.75 e 0.6 lim_y 0.2 0.35
     //azul
-    if ((lado == 1) && (distancia(rb,ball.x(),ball.y()) <= 0.1) && ((rb.y()<-top_limit)||(rb.y()>top_limit))){
+    if ((lado == 1) && (distancia(rb,ball.x(),ball.y()) <= 0.1) && ((rb.y()<-top_limit-0.05)||(rb.y()>top_limit+0.05))){
         if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
             //vaiPara(rb,ball.x(),ball.y(),id);
             if(ball.y() < rb.y()){
@@ -1424,7 +1424,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
                 }
         }
     //amarelo
-    }else if ((lado == -1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)&& ((rb.y()<-top_limit)||(rb.y()>top_limit))){
+    }else if ((lado == -1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)&& ((rb.y()<-top_limit-0.05)||(rb.y()>top_limit+0.05))){
         if((ball.x() <= lim_x[1]) && (ball.x() >= lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
             //vaiPara(rb,ball.x(),ball.y(),id);
             //vaiPara(rb,ball.x(),ball.y(),id);
