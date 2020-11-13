@@ -1320,15 +1320,17 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
     double top_limit = 0.17; //largura do gol/2
     double x_desejado = -0.7*lado;
     double delta = 0.02; // pra impedir que ele fique sambando parado no gol
-
+    double velocidade = 2.5;
     double dist = distancia(rb,ball.x(),ball.y());
     vector <double> new_pos = {0,0};
 
     //se a bola estiver longe do goleiro utiliza o preditor para ajeitar sua posição
     if ( dist > 0.3){
         new_pos = {predictedBall.x,predictedBall.y};
+        velocidade = 2.5;
     }else{
         new_pos = {ball.x(),ball.y()};
+        velocidade = 3;
     }
 
     if(dist < 0.12 && ball.x() > rb.x() && rb.x() < -0.6 && ball.y() <= top_limit && ball.y() >=-top_limit && lado == 1){
@@ -1356,18 +1358,26 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
             else if(rb.y() < top_limit && rb.y() + delta < new_pos[1]){ //robô abaixo da bola
 
                 if(angulo.flag == 1){
-                    andarFrente(125,id);
+                    //andarFrente(125,id);
+                    VW[id][0] = velocidade;
+                    VW[id][1] = 0;
                 }
                 else{
-                    andarFundo(125,id);
+                    //andarFundo(125,id);
+                    VW[id][0] = -velocidade;
+                    VW[id][1] = 0;
                 }
             }
             else if(rb.y() > -top_limit && rb.y() - delta > new_pos[1]){ //robô acima da bola
                 if(angulo.flag == 1){
-                    andarFundo(125,id);
+                    //andarFundo(125,id);
+                    VW[id][0] = -velocidade;
+                    VW[id][1] = 0;
                 }
                 else{
-                    andarFrente(125,id);
+                    VW[id][0] = velocidade;
+                    VW[id][1] = 0;
+                    //andarFrente(125,id);
                 }
             }
             else{
@@ -1375,17 +1385,20 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
             }
             //gira se a bola estiver muito perto do goleiro
             if (distancia(rb,ball.x(),ball.y()) < 0.08){
-                if((ball.y() < rb.y() && lado == 1)){
-                   girarHorario(125,id);
-                }
-                if((ball.y() > rb.y() && lado == -1)){
-                   girarHorario(125,id);
-                }
-                if((ball.y() > rb.y() && lado == 1)){
-                   girarAntihorario(125,id);
-                }
-                if((ball.y() < rb.y() && lado == -1)){
-                   girarAntihorario(125,id);
+                if (((rb.y()>0)&&(predictedBall.y>rb.y()+0.01))||((rb.y()<0)&&(predictedBall.y<rb.y()-0.01)))
+                { //Só chuta se a bola não tiver a caminho de entrar no gol (condicao nova pos unball)
+                    if((ball.y() < rb.y() && lado == 1)){
+                       girarHorario(125,id);
+                    }
+                    if((ball.y() > rb.y() && lado == -1)){
+                       girarHorario(125,id);
+                    }
+                    if((ball.y() > rb.y() && lado == 1)){
+                       girarAntihorario(125,id);
+                    }
+                    if((ball.y() < rb.y() && lado == -1)){
+                       girarAntihorario(125,id);
+                    }
                 }
             }
         }
@@ -1394,7 +1407,7 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
     double lim_y[2] = {0.17,0.38};
     //lim_x = 0.75 e 0.6 lim_y 0.2 0.35
     //azul
-    if ((lado == 1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)){
+    if ((lado == 1) && (distancia(rb,ball.x(),ball.y()) <= 0.1) && ((rb.y()<-top_limit)||(rb.y()>top_limit))){
         if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
             //vaiPara(rb,ball.x(),ball.y(),id);
             if(ball.y() < rb.y()){
@@ -1404,16 +1417,14 @@ void Strategy::goleiro_petersson2(fira_message::Robot rb,fira_message::Ball ball
             }
         }
         if((ball.x() >= -lim_x[1]) && (ball.x() <= -lim_x[0]) && (ball.y() <= lim_y[1]) && (ball.y() >= lim_y[0])){
-            //vaiPara(rb,ball.x(),ball.y(),id);
-            //vaiPara(rb,ball.x(),ball.y(),id);
-            if(ball.y() < rb.y()){
-               girarHorario(125,id);
-            }else{
-               girarAntihorario(125,id);
-            }
+                if(ball.y() < rb.y()){
+                   girarHorario(125,id);
+                }else{
+                   girarAntihorario(125,id);
+                }
         }
     //amarelo
-    }else if ((lado == -1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)){
+    }else if ((lado == -1) && (distancia(rb,ball.x(),ball.y()) <= 0.1)&& ((rb.y()<-top_limit)||(rb.y()>top_limit))){
         if((ball.x() <= lim_x[1]) && (ball.x() >= lim_x[0]) && (ball.y() >= -lim_y[1]) && (ball.y() <= -lim_y[0])){
             //vaiPara(rb,ball.x(),ball.y(),id);
             //vaiPara(rb,ball.x(),ball.y(),id);
@@ -1473,7 +1484,7 @@ void Strategy::FIRE_KICK(fira_message::Robot rb,fira_message::Ball ball, int id)
         //cout<<"Olhando pro gol"<<endl;
         //Se o robo estiver olhando pra bola
         if( (flag_lateral) && (abs(angulo.fi*M_PI/180) <= lim_ang)){
-            cout<<"FIRE!"<<endl;
+            //cout<<"FIRE!"<<endl;
             VW[id][0] = angulo.flag*5;
             VW[id][1] = 0;
             bandeira = false;
